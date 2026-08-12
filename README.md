@@ -1,11 +1,1 @@
 # LabEngSoftware
-
-Bom dia 
-
-# Grupo Formado por :
-
-UANDERSON LEONARDO DE SOUZA
-
-MARIANA CAVALCANTE LINS
-
-GUSTAVO FELIPE MORAIS
