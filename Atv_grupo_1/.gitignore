@@ -1,0 +1,27 @@
+# Ambiente virtual Python
+Atv_grupo_1/backend/.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Sistema operacional e editor
+.DS_Store
+Thumbs.db
+.vscode/
