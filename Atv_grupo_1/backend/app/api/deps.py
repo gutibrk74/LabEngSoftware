@@ -38,5 +38,13 @@ def get_usuario_atual(
     return service.obter_usuario_do_token(credenciais.credentials)
 
 
+def get_administrador_atual(
+    usuario: Annotated[Usuario, Depends(get_usuario_atual)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> Usuario:
+    return service.garantir_administrador(usuario)
+
+
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 UsuarioAtual = Annotated[Usuario, Depends(get_usuario_atual)]
+AdministradorAtual = Annotated[Usuario, Depends(get_administrador_atual)]

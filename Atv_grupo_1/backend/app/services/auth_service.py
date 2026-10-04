@@ -10,7 +10,7 @@ from app.core.security import (
     gerar_hash_senha,
     verificar_senha,
 )
-from app.models.usuario import Usuario
+from app.models.usuario import PERFIL_ADMINISTRADOR, Usuario
 from app.repositories.usuario_repository import UsuarioRepository
 from app.schemas.usuario import (
     LoginRequest,
@@ -82,5 +82,12 @@ class AuthService:
 
         if usuario is None or not usuario.ativo:
             raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        return usuario
+
+    def garantir_administrador(self, usuario: Usuario) -> Usuario:
+        # O perfil vem do banco, não do token, para refletir alterações recentes.
+        if usuario.perfil != PERFIL_ADMINISTRADOR:
+            raise AcessoNegadoError("Acesso restrito a administradores.")
 
         return usuario

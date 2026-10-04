@@ -29,3 +29,8 @@ class UsuarioRepository:
 
         self._db.refresh(usuario)
         return usuario
+
+    def salvar(self, usuario: Usuario) -> Usuario:
+        self._db.commit()
+        self._db.refresh(usuario)
+        return usuario

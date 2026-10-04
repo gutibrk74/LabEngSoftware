@@ -14,6 +14,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
 
+PERFIL_USUARIO = "usuario"
+PERFIL_ADMINISTRADOR = "administrador"
+
+
 class Usuario(Base):
     __tablename__ = "usuarios"
 
