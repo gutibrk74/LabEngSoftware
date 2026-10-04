@@ -6,9 +6,9 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Index,
     Numeric,
     String,
-    UniqueConstraint,
     func,
     text,
 )
@@ -25,7 +25,8 @@ class Quadra(Base):
     __tablename__ = "quadras"
 
     __table_args__ = (
-        UniqueConstraint("nome", name="uq_quadras_nome"),
+        # Nome único sem diferenciar maiúsculas ("Arena" = "arena").
+        Index("uq_quadras_nome_lower", text("lower(nome)"), unique=True),
         CheckConstraint(
             f"tipo_esporte IN ({', '.join(repr(e) for e in ESPORTES)})",
             name="ck_quadras_tipo_esporte",
