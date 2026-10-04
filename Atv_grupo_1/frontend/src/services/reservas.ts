@@ -1,4 +1,4 @@
-import { API_URL, tratarResposta } from "./api";
+import { API_URL, fetchAutenticado, tratarResposta } from "./api";
 
 export type HorarioGrade = {
   horario: number;
@@ -12,6 +12,24 @@ export type GradeHorarios = {
   horarios: HorarioGrade[];
 };
 
+export type StatusReserva = "pendente" | "paga" | "cancelada";
+
+export type Reserva = {
+  id: number;
+  quadra_id: number;
+  data: string;
+  horario: number;
+  valor: number;
+  status: StatusReserva;
+  criado_em: string;
+};
+
+export type ReservaPayload = {
+  quadra_id: number;
+  data: string;
+  horario: number;
+};
+
 export async function buscarGradeHorarios(
   quadraId: number,
   data: string,
@@ -21,4 +39,13 @@ export async function buscarGradeHorarios(
     `${API_URL}/quadras/${quadraId}/horarios?${parametros}`,
   );
   return tratarResposta<GradeHorarios>(resposta);
+}
+
+export async function criarReserva(dados: ReservaPayload): Promise<Reserva> {
+  const resposta = await fetchAutenticado("/reservas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados),
+  });
+  return tratarResposta<Reserva>(resposta);
 }

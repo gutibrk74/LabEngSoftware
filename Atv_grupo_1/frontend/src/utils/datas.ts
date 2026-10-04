@@ -31,6 +31,19 @@ export function diaDaSemanaCurto(data: Date): string {
   return formatoDiaSemana.format(data).replace(".", "").toUpperCase();
 }
 
+const formatoDataExtenso = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+
+// "2026-10-05" -> "segunda-feira, 05 de outubro de 2026"
+export function formatarDataExtenso(dataIso: string): string {
+  const [ano, mes, dia] = dataIso.split("-").map(Number);
+  return formatoDataExtenso.format(new Date(ano, mes - 1, dia));
+}
+
 export function formatarHora(hora: number): string {
   return `${String(hora).padStart(2, "0")}:00`;
 }

@@ -1,0 +1,144 @@
+import { useEffect, useRef, useState } from "react";
+import "../styles/modal.css";
+import type { Quadra } from "../services/quadras";
+import { criarReserva } from "../services/reservas";
+import { formatarDataExtenso, formatarHora } from "../utils/datas";
+import { ESPORTES, formatarPreco } from "../utils/quadras";
+
+type ConfirmarReservaModalProps = {
+  quadra: Quadra;
+  data: string;
+  horario: number;
+  valor: number;
+  onFechar: () => void;
+};
+
+export default function ConfirmarReservaModal({
+  quadra,
+  data,
+  horario,
+  valor,
+  onFechar,
+}: ConfirmarReservaModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [confirmada, setConfirmada] = useState(false);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    dialogRef.current?.showModal();
+  }, []);
+
+  async function confirmar() {
+    setErro("");
+    setEnviando(true);
+
+    try {
+      await criarReserva({ quadra_id: quadra.id, data, horario });
+      setConfirmada(true);
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível concluir a reserva.",
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="modal modal--pequeno"
+      aria-labelledby="reserva-titulo"
+      onClose={onFechar}
+    >
+      <div className="modal-form">
+        <header className="modal-cabecalho">
+          <h2 id="reserva-titulo" className="modal-titulo">
+            {confirmada ? "Reserva confirmada!" : "Revise sua reserva"}
+          </h2>
+
+          <button
+            className="modal-fechar"
+            type="button"
+            aria-label="Fechar"
+            onClick={onFechar}
+          >
+            ×
+          </button>
+        </header>
+
+        <dl className="reserva-resumo">
+          <div>
+            <dt>Quadra</dt>
+            <dd>
+              {ESPORTES[quadra.tipo_esporte].emoji} {quadra.nome}
+            </dd>
+          </div>
+          <div>
+            <dt>Data</dt>
+            <dd>{formatarDataExtenso(data)}</dd>
+          </div>
+          <div>
+            <dt>Horário</dt>
+            <dd>
+              {formatarHora(horario)} – {formatarHora(horario + 1)}
+            </dd>
+          </div>
+          <div>
+            <dt>Valor</dt>
+            <dd className="reserva-resumo-valor">{formatarPreco(valor)}</dd>
+          </div>
+        </dl>
+
+        <p className="modal-texto">
+          {confirmada
+            ? "Sua reserva está pendente de pagamento. Você verá o " +
+              "pagamento na próxima etapa."
+            : "O horário fica garantido para você assim que confirmar. " +
+              "O pagamento é feito na próxima etapa."}
+        </p>
+
+        {erro && (
+          <p className="form-erro" role="alert">
+            {erro}
+          </p>
+        )}
+
+        <footer className="modal-acoes">
+          {confirmada ? (
+            <button
+              className="botao botao--primario"
+              type="button"
+              onClick={onFechar}
+              autoFocus
+            >
+              Concluir
+            </button>
+          ) : (
+            <>
+              <button
+                className="botao botao--secundario"
+                type="button"
+                onClick={onFechar}
+              >
+                Voltar
+              </button>
+
+              <button
+                className="botao botao--primario"
+                type="button"
+                onClick={confirmar}
+                disabled={enviando || erro !== ""}
+              >
+                {enviando ? "Confirmando..." : "Confirmar reserva"}
+              </button>
+            </>
+          )}
+        </footer>
+      </div>
+    </dialog>
+  );
+}

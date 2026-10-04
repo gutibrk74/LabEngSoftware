@@ -212,8 +212,28 @@
 }
 
 .horario-slot--livre {
+  width: 100%;
   border: 1px dashed #3a3a40;
+  background: transparent;
   color: #b6b6bd;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.horario-slot--livre:hover {
+  border-color: #d1131a;
+  background: rgb(209 19 26 / 8%);
+  color: #fff;
+}
+
+.horario-slot--livre:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
 }
 
 .horario-slot--reservado {
@@ -226,6 +246,40 @@
   border: 1px solid #1c1c20;
   background: #0f0f11;
   color: #5a5a62;
+}
+
+/* Janela de revisão da reserva */
+
+.reserva-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid #202024;
+  border-radius: 12px;
+  background: #0d0d0f;
+}
+
+.reserva-resumo div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.reserva-resumo dt {
+  color: #8a8a93;
+  font-size: 13px;
+}
+
+.reserva-resumo dd {
+  margin: 0;
+  font-size: 14px;
+  text-align: right;
+}
+
+.reserva-resumo-valor {
+  font-weight: 700;
 }
 
 @media (max-width: 800px) {

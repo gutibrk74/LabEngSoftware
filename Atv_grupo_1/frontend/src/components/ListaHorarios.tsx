@@ -5,12 +5,14 @@ type ListaHorariosProps = {
   grade: GradeHorarios | null;
   carregando: boolean;
   erro: string;
+  onReservar: (horario: number, valor: number) => void;
 };
 
 export default function ListaHorarios({
   grade,
   carregando,
   erro,
+  onReservar,
 }: ListaHorariosProps) {
   if (carregando) {
     return <p className="horarios-aviso">Carregando horários...</p>;
@@ -33,7 +35,7 @@ export default function ListaHorarios({
 
   return (
     <ul className="lista-horarios">
-      {grade.horarios.map(({ horario, disponivel }) => {
+      {grade.horarios.map(({ horario, disponivel, valor }) => {
         // A API só diz se está livre; aqui separamos o que já passou.
         const encerrado = !disponivel && ehHoje && horario <= horaAtual;
         const situacao = disponivel
@@ -46,11 +48,19 @@ export default function ListaHorarios({
           <li key={horario} className="horario-linha">
             <span className="horario-hora">{formatarHora(horario)}</span>
 
-            <div className={`horario-slot horario-slot--${situacao}`}>
-              {situacao === "livre" && "Disponível"}
-              {situacao === "reservado" && "Reservado"}
-              {situacao === "encerrado" && "Encerrado"}
-            </div>
+            {situacao === "livre" ? (
+              <button
+                type="button"
+                className="horario-slot horario-slot--livre"
+                onClick={() => onReservar(horario, valor)}
+              >
+                + Disponível — clique para reservar
+              </button>
+            ) : (
+              <div className={`horario-slot horario-slot--${situacao}`}>
+                {situacao === "reservado" ? "Reservado" : "Encerrado"}
+              </div>
+            )}
           </li>
         );
       })}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/horarios.css";
+import ConfirmarReservaModal from "../components/ConfirmarReservaModal";
 import ListaHorarios from "../components/ListaHorarios";
 import QuadraResumo from "../components/QuadraResumo";
 import SeletorDias from "../components/SeletorDias";
@@ -10,16 +11,25 @@ import { ESPORTES } from "../utils/quadras";
 
 const DIAS_EXIBIDOS = 14;
 
+type Escolha = { horario: number; valor: number };
+
 export default function HorariosPage() {
   const { quadras, carregando, erro } = useQuadras(false);
   const [data, setData] = useState(hojeIso);
   const [quadraEscolhida, setQuadraEscolhida] = useState<number | null>(null);
+  const [escolha, setEscolha] = useState<Escolha | null>(null);
 
   // Sem escolha do usuário, mostra a primeira quadra da lista.
   const quadra =
     quadras.find(({ id }) => id === quadraEscolhida) ?? quadras[0] ?? null;
 
   const grade = useGradeHorarios(quadra?.id ?? null, data);
+
+  function fecharReserva() {
+    setEscolha(null);
+    // Atualiza a grade: o horário pode ter sido reservado (por você ou não).
+    grade.recarregar();
+  }
 
   if (carregando) {
     return <p className="horarios-aviso">Carregando quadras...</p>;
@@ -75,8 +85,19 @@ export default function HorariosPage() {
           grade={grade.grade}
           carregando={grade.carregando}
           erro={grade.erro}
+          onReservar={(horario, valor) => setEscolha({ horario, valor })}
         />
       </div>
+
+      {escolha && (
+        <ConfirmarReservaModal
+          quadra={quadra}
+          data={data}
+          horario={escolha.horario}
+          valor={escolha.valor}
+          onFechar={fecharReserva}
+        />
+      )}
     </section>
   );
 }

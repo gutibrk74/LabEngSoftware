@@ -10,11 +10,13 @@ type Resultado = {
 
 // Busca a grade da quadra no dia escolhido. Enquanto o resultado guardado
 // não for da combinação atual (quadra + data), a grade está carregando.
+// Ao recarregar a mesma combinação, a grade antiga fica na tela até a nova
+// chegar (sem piscar "Carregando...").
 export function useGradeHorarios(quadraId: number | null, data: string) {
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [versao, setVersao] = useState(0);
 
-  const chave = quadraId === null ? null : `${quadraId}|${data}|${versao}`;
+  const chave = quadraId === null ? null : `${quadraId}|${data}`;
 
   useEffect(() => {
     if (quadraId === null) {
@@ -22,7 +24,7 @@ export function useGradeHorarios(quadraId: number | null, data: string) {
     }
 
     let ativo = true;
-    const chaveBusca = `${quadraId}|${data}|${versao}`;
+    const chaveBusca = `${quadraId}|${data}`;
 
     buscarGradeHorarios(quadraId, data)
       .then((grade) => {
