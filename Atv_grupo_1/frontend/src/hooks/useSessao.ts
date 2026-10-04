@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { buscarUsuarioAtual, ErroApi } from "../services/api";
+import { buscarUsuarioAtual } from "../services/api";
 import type { LoginResponse, Usuario } from "../services/api";
-import { limparSessao, obterToken, salvarToken } from "../services/sessao";
+import {
+  EVENTO_SESSAO_EXPIRADA,
+  limparSessao,
+  obterToken,
+  salvarToken,
+} from "../services/sessao";
 
 export function useSessao() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -20,10 +25,8 @@ export function useSessao() {
           setUsuario(dados);
         }
       })
-      .catch((erro: unknown) => {
-        if (erro instanceof ErroApi && erro.status === 401) {
-          limparSessao();
-        }
+      .catch(() => {
+        // Token inválido já é tratado pelo fetchAutenticado (401).
       })
       .finally(() => {
         if (ativo) {
@@ -33,6 +36,19 @@ export function useSessao() {
 
     return () => {
       ativo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    function aoExpirarSessao() {
+      setUsuario(null);
+      window.location.hash = "#/login";
+    }
+
+    window.addEventListener(EVENTO_SESSAO_EXPIRADA, aoExpirarSessao);
+
+    return () => {
+      window.removeEventListener(EVENTO_SESSAO_EXPIRADA, aoExpirarSessao);
     };
   }, []);
 

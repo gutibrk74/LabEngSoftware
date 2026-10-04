@@ -1,4 +1,4 @@
-import { obterToken } from "./sessao";
+import { encerrarSessaoExpirada, obterToken } from "./sessao";
 
 export const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
@@ -64,9 +64,31 @@ export async function tratarResposta<T>(resposta: Response): Promise<T> {
   return corpo as T;
 }
 
-export function cabecalhoAutenticacao(): Record<string, string> {
+function cabecalhoAutenticacao(): Record<string, string> {
   const token = obterToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+type OpcoesRequisicao = Omit<RequestInit, "headers"> & {
+  headers?: Record<string, string>;
+};
+
+// Usado em toda chamada que exige login: envia o token e, se a API
+// responder 401 (token expirado ou inválido), encerra a sessão.
+export async function fetchAutenticado(
+  caminho: string,
+  opcoes: OpcoesRequisicao = {},
+): Promise<Response> {
+  const resposta = await fetch(`${API_URL}${caminho}`, {
+    ...opcoes,
+    headers: { ...opcoes.headers, ...cabecalhoAutenticacao() },
+  });
+
+  if (resposta.status === 401) {
+    encerrarSessaoExpirada();
+  }
+
+  return resposta;
 }
 
 export async function cadastrarUsuario(
@@ -98,9 +120,7 @@ export async function fazerLogin(
 }
 
 export async function buscarUsuarioAtual(): Promise<Usuario> {
-  const resposta = await fetch(`${API_URL}/auth/me`, {
-    headers: cabecalhoAutenticacao(),
-  });
+  const resposta = await fetchAutenticado("/auth/me");
 
   return tratarResposta<Usuario>(resposta);
 }
