@@ -47,6 +47,26 @@
   border-color: #4a4a52;
 }
 
+.botao--perigo {
+  background: transparent;
+  border-color: rgb(209 19 26 / 45%);
+  color: #ff666b;
+}
+
+.botao--perigo:hover {
+  background: rgb(209 19 26 / 12%);
+}
+
+.modal-acoes .botao--perigo {
+  background: #d1131a;
+  border-color: #d1131a;
+  color: #fff;
+}
+
+.modal-acoes .botao--perigo:hover {
+  background: #b51016;
+}
+
 .botao--pequeno {
   min-height: 32px;
   padding: 4px 12px;
@@ -64,6 +84,22 @@
   border-radius: 16px;
   background: #111114;
   color: #fff;
+}
+
+.modal--pequeno {
+  width: min(420px, calc(100% - 32px));
+}
+
+.modal-titulo {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-texto {
+  margin: 0;
+  color: #b6b6bd;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .modal::backdrop {
