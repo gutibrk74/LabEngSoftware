@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
 import "../styles/login.css";
+import { cadastrarUsuario, fazerLogin } from "../services/api";
 
 type AuthPageProps = {
   mode: "login" | "cadastro";
@@ -39,7 +40,7 @@ function PasswordField({
           aria-label={visible ? `Ocultar ${label}` : `Mostrar ${label}`}
           aria-pressed={visible}
           aria-controls={id}
-          onClick={() => setVisible(!visible)}
+          onClick={() => setVisible((current) => !current)}
         >
           <svg
             width="20"
@@ -63,68 +64,103 @@ function PasswordField({
 export default function AuthPage({ mode }: AuthPageProps) {
   const isRegister = mode === "cadastro";
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage("");
+    setLoading(true);
 
-    const form = event.currentTarget;
-    const data = new FormData(form);
+    const data = new FormData(event.currentTarget);
 
-    if (isRegister) {
-      const name = String(data.get("nome") ?? "").trim();
-      const city = String(data.get("cidade") ?? "").trim();
-      const cpf = String(data.get("cpf") ?? "").replace(/\D/g, "");
-      const phone = String(data.get("telefone") ?? "").replace(/\D/g, "");
+    try {
+      const email = String(data.get("email") ?? "").trim();
+      const senha = String(data.get("senha") ?? "");
 
-      if (!name || !city) {
-        setMessage("Preencha seu nome e sua cidade.");
-        return;
+      if (isRegister) {
+        const cpf = String(data.get("cpf") ?? "").replace(/\D/g, "");
+        const telefone = String(data.get("telefone") ?? "").replace(/\D/g, "");
+        const cidade = String(data.get("cidade") ?? "").trim();
+        const nome = String(data.get("nome") ?? "").trim();
+        const confirmarSenha = String(data.get("confirmarSenha") ?? "");
+
+        if (cpf.length !== 11) {
+          throw new Error("Informe um CPF com 11 dígitos.");
+        }
+
+        if (telefone.length < 10 || telefone.length > 11) {
+          throw new Error("Informe um telefone válido com DDD.");
+        }
+
+        if (senha !== confirmarSenha) {
+          throw new Error("As senhas não coincidem.");
+        }
+
+        const usuario = await cadastrarUsuario({
+          nome,
+          email,
+          telefone,
+          cpf,
+          cidade,
+          senha,
+          confirmar_senha: confirmarSenha,
+        });
+
+        setMessage(
+          `Cadastro realizado para ${usuario.nome}. Redirecionando...`,
+        );
+
+        window.setTimeout(() => {
+          window.location.hash = "#/login";
+        }, 1200);
+      } else {
+        const resposta = await fazerLogin({
+          email,
+          senha,
+        });
+
+        localStorage.setItem("access_token", resposta.access_token);
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify(resposta.usuario),
+        );
+
+        setMessage(`Login realizado. Bem-vindo, ${resposta.usuario.nome}!`);
       }
-
-      if (cpf.length !== 11) {
-        setMessage("Informe um CPF com 11 dígitos.");
-        return;
-      }
-
-      if (phone.length < 10 || phone.length > 11) {
-        setMessage("Informe o telefone com DDD: 10 ou 11 dígitos.");
-        return;
-      }
-
-      if (data.get("senha") !== data.get("confirmarSenha")) {
-        setMessage("As senhas não coincidem. Confira os dois campos.");
-        return;
-      }
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível concluir a operação.",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    setMessage(
-      isRegister
-        ? "Formulário validado. O cadastro ainda não está conectado ao servidor."
-        : "Formulário validado. O login ainda não está conectado ao servidor.",
-    );
   }
 
   return (
     <main className="login-page">
       <section className="login-cover" aria-labelledby="brand-title">
         <div className="login-brand">
-  <img
-    className="login-brand-logo"
-    src="/images/logo-reserva-gavea.png"
-    alt=""
-  />
+          <img
+            className="login-brand-logo"
+            src="/images/logo-reserva-gavea.png"
+            alt=""
+          />
 
-  <h1 id="brand-title">Reserva Gávea</h1>
+          <h1 id="brand-title">Reserva Gávea</h1>
 
           <p className="login-tagline">
-            Seu próximo jogo começa aqui.
-            Reserve quadras e campos esportivos com facilidade.
+            Seu próximo jogo começa aqui. Reserve quadras e campos esportivos
+            com facilidade.
           </p>
         </div>
       </section>
 
       <section
-        className={`login-panel ${isRegister ? "login-panel--register" : ""}`}
+        className={`login-panel ${
+          isRegister ? "login-panel--register" : ""
+        }`}
         aria-labelledby="auth-title"
       >
         <div className="login-content">
@@ -236,14 +272,23 @@ export default function AuthPage({ mode }: AuthPageProps) {
                   name="confirmarSenha"
                   creating
                 />
+
                 <p className="auth-hint">
                   Use pelo menos 8 caracteres na senha.
                 </p>
               </>
             )}
 
-            <button className="login-submit" type="submit">
-              {isRegister ? "Criar minha conta" : "Entrar no sistema"}
+            <button
+              className="login-submit"
+              type="submit"
+              disabled={loading}
+            >
+              {loading
+                ? "Aguarde..."
+                : isRegister
+                  ? "Criar minha conta"
+                  : "Entrar no sistema"}
             </button>
 
             {message && (
@@ -255,6 +300,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
           <p className="auth-switch">
             {isRegister ? "Já tem uma conta? " : "Ainda não tem uma conta? "}
+
             <a href={isRegister ? "#/login" : "#/cadastro"}>
               {isRegister ? "Entre aqui" : "Crie aqui"}
             </a>

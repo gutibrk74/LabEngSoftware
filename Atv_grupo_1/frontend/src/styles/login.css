@@ -258,6 +258,11 @@
   object-fit: contain;
 }
 
+.login-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 @media (max-width: 900px) {
   .login-page {
     grid-template-columns: minmax(0, 1fr) 390px;
