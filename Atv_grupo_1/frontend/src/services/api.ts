@@ -1,6 +1,6 @@
 import { obterToken } from "./sessao";
 
-const API_URL =
+export const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 type CadastroPayload = {
@@ -45,7 +45,11 @@ export class ErroApi extends Error {
   }
 }
 
-async function tratarResposta<T>(resposta: Response): Promise<T> {
+export async function tratarResposta<T>(resposta: Response): Promise<T> {
+  if (resposta.status === 204) {
+    return undefined as T;
+  }
+
   const corpo = await resposta.json();
 
   if (!resposta.ok) {
@@ -60,7 +64,7 @@ async function tratarResposta<T>(resposta: Response): Promise<T> {
   return corpo as T;
 }
 
-function cabecalhoAutenticacao(): Record<string, string> {
+export function cabecalhoAutenticacao(): Record<string, string> {
   const token = obterToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
