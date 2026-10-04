@@ -36,9 +36,7 @@ export default function HomePage({ usuario }: HomePageProps) {
         )}
 
         {!carregando && !erro && quadras.length === 0 && (
-          <p className="quadras-aviso">
-            Nenhuma quadra disponível no momento.
-          </p>
+          <p className="quadras-aviso">Nenhuma quadra disponível no momento.</p>
         )}
 
         <div className="quadras-grid">

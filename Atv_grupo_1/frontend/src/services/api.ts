@@ -1,7 +1,6 @@
 import { encerrarSessaoExpirada, obterToken } from "./sessao";
 
-export const API_URL =
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+export const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 type CadastroPayload = {
   nome: string;
@@ -105,9 +104,7 @@ export async function cadastrarUsuario(
   return tratarResposta<Usuario>(resposta);
 }
 
-export async function fazerLogin(
-  dados: LoginPayload,
-): Promise<LoginResponse> {
+export async function fazerLogin(dados: LoginPayload): Promise<LoginResponse> {
   const resposta = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {

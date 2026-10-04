@@ -49,6 +49,12 @@ export function formatarPreco(valor: number): string {
   return formatoPreco.format(valor);
 }
 
-export function formatarDimensoes(comprimento: number, largura: number): string {
-  return `${formatoMedida.format(comprimento)} m × ${formatoMedida.format(largura)} m`;
+export function formatarDimensoes(
+  comprimento: number,
+  largura: number,
+): string {
+  const textoComprimento = formatoMedida.format(comprimento);
+  const textoLargura = formatoMedida.format(largura);
+
+  return `${textoComprimento} m × ${textoLargura} m`;
 }

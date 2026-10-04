@@ -147,7 +147,10 @@ export default function QuadrasAdminPage() {
       {quadraParaInativar && (
         <ConfirmModal
           titulo="Inativar quadra"
-          mensagem={`"${quadraParaInativar.nome}" deixará de aparecer para os atletas. Você pode reativá-la depois.`}
+          mensagem={
+            `"${quadraParaInativar.nome}" deixará de aparecer para os ` +
+            "atletas. Você pode reativá-la depois."
+          }
           textoConfirmar="Inativar"
           onConfirmar={confirmarInativacao}
           onFechar={() => setQuadraParaInativar(null)}
