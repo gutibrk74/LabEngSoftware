@@ -8,9 +8,11 @@ from app.core.exceptions import NaoAutenticadoError
 from app.db.session import get_db
 from app.models.usuario import Usuario
 from app.repositories.quadra_repository import QuadraRepository
+from app.repositories.reserva_repository import ReservaRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.auth_service import AuthService
 from app.services.quadra_service import QuadraService
+from app.services.reserva_service import ReservaService
 
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -53,7 +55,16 @@ def get_quadra_service(
     return QuadraService(QuadraRepository(db))
 
 
+def get_reserva_service(
+    db: Annotated[Session, Depends(get_db)],
+) -> ReservaService:
+    return ReservaService(
+        ReservaRepository(db), QuadraService(QuadraRepository(db))
+    )
+
+
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 QuadraServiceDep = Annotated[QuadraService, Depends(get_quadra_service)]
+ReservaServiceDep = Annotated[ReservaService, Depends(get_reserva_service)]
 UsuarioAtual = Annotated[Usuario, Depends(get_usuario_atual)]
 AdministradorAtual = Annotated[Usuario, Depends(get_administrador_atual)]
