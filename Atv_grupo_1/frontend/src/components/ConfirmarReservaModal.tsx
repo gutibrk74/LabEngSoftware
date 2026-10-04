@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "../styles/modal.css";
 import type { Quadra } from "../services/quadras";
 import { criarReserva } from "../services/reservas";
+import type { Reserva } from "../services/reservas";
 import { formatarDataExtenso, formatarHora } from "../utils/datas";
 import { ESPORTES, formatarPreco } from "../utils/quadras";
 
@@ -22,7 +23,8 @@ export default function ConfirmarReservaModal({
 }: ConfirmarReservaModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [enviando, setEnviando] = useState(false);
-  const [confirmada, setConfirmada] = useState(false);
+  const [reserva, setReserva] = useState<Reserva | null>(null);
+  const confirmada = reserva !== null;
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -34,8 +36,14 @@ export default function ConfirmarReservaModal({
     setEnviando(true);
 
     try {
-      await criarReserva({ quadra_id: quadra.id, data, horario });
-      setConfirmada(true);
+      setReserva(
+        await criarReserva({
+          quadra_id: quadra.id,
+          data,
+          horario,
+          valor_esperado: valor,
+        }),
+      );
     } catch (error) {
       setErro(
         error instanceof Error
@@ -89,7 +97,9 @@ export default function ConfirmarReservaModal({
           </div>
           <div>
             <dt>Valor</dt>
-            <dd className="reserva-resumo-valor">{formatarPreco(valor)}</dd>
+            <dd className="reserva-resumo-valor">
+              {formatarPreco(reserva?.valor ?? valor)}
+            </dd>
           </div>
         </dl>
 

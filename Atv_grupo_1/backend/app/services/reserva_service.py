@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-from app.core.exceptions import DadosInvalidosError
+from app.core.exceptions import ConflitoError, DadosInvalidosError
 from app.core.tempo import agora
 from app.models.reserva import Reserva
 from app.models.usuario import Usuario
@@ -53,6 +53,13 @@ class ReservaService:
 
         if self._ja_comecou(dados.data, dados.horario, agora()):
             raise DadosInvalidosError("Esse horário já começou.")
+
+        if dados.valor_esperado != quadra.preco_hora:
+            preco = f"{quadra.preco_hora:.2f}".replace(".", ",")
+            raise ConflitoError(
+                f"O preço deste horário mudou para R$ {preco}. "
+                "Feche e revise a reserva novamente."
+            )
 
         reserva = Reserva(
             usuario_id=usuario.id,

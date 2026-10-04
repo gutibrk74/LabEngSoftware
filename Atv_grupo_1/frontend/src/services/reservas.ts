@@ -28,6 +28,8 @@ export type ReservaPayload = {
   quadra_id: number;
   data: string;
   horario: number;
+  // Valor mostrado na revisão; a API recusa se o preço tiver mudado.
+  valor_esperado: number;
 };
 
 export async function buscarGradeHorarios(

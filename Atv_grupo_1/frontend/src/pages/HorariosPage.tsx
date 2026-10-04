@@ -14,7 +14,12 @@ const DIAS_EXIBIDOS = 14;
 type Escolha = { horario: number; valor: number };
 
 export default function HorariosPage() {
-  const { quadras, carregando, erro } = useQuadras(false);
+  const {
+    quadras,
+    carregando,
+    erro,
+    recarregar: recarregarQuadras,
+  } = useQuadras(false);
   const [data, setData] = useState(hojeIso);
   const [quadraEscolhida, setQuadraEscolhida] = useState<number | null>(null);
   const [escolha, setEscolha] = useState<Escolha | null>(null);
@@ -27,11 +32,14 @@ export default function HorariosPage() {
 
   function fecharReserva() {
     setEscolha(null);
-    // Atualiza a grade: o horário pode ter sido reservado (por você ou não).
+    // Atualiza grade e quadras: o horário pode ter sido reservado e o preço
+    // pode ter mudado enquanto a revisão estava aberta.
     grade.recarregar();
+    recarregarQuadras();
   }
 
-  if (carregando) {
+  // Só mostra "Carregando" na primeira vez; ao atualizar, mantém a tela.
+  if (carregando && quadras.length === 0) {
     return <p className="horarios-aviso">Carregando quadras...</p>;
   }
 
