@@ -7,7 +7,17 @@ from app.db.session import get_db
 from app.models.usuario import Usuario
 from app.schemas.usuario import UsuarioCreate, UsuarioResponse
 from app.core.security import gerar_hash_senha
-
+from app.schemas.usuario import (
+    LoginRequest,
+    TokenResponse,
+    UsuarioCreate,
+    UsuarioResponse,
+)
+from app.core.security import (
+    criar_token_acesso,
+    gerar_hash_senha,
+    verificar_senha,
+)
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -82,3 +92,39 @@ def cadastrar_usuario(
         ) from None
 
     return usuario
+
+
+@router.post("/login", response_model=TokenResponse)
+def fazer_login(
+    dados: LoginRequest,
+    db: Session = Depends(get_db),
+):
+    email = str(dados.email).strip().lower()
+
+    usuario = db.scalar(
+        select(Usuario).where(Usuario.email == email)
+    )
+
+    if not usuario or not verificar_senha(
+        dados.senha,
+        usuario.senha_hash,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="E-mail ou senha inválidos.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not usuario.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário inativo.",
+        )
+
+    token = criar_token_acesso(usuario.id, usuario.perfil)
+
+    return TokenResponse(
+        access_token=token,
+        token_type="bearer",
+        usuario=usuario,
+    )

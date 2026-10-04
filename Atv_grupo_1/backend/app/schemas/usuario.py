@@ -27,4 +27,15 @@ class UsuarioResponse(BaseModel):
     perfil: str
     ativo: bool
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True}            
+    
+    
+class LoginRequest(BaseModel):
+    email: EmailStr
+    senha: str = Field(min_length=1, max_length=128)
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: UsuarioResponse
