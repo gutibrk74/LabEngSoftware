@@ -1,27 +1,21 @@
 import { useEffect, useState } from "react";
-import { verificarSaudeDaApi } from "./services/api";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
-function App() {
-  const [status, setStatus] = useState("Verificando API...");
-  const [erro, setErro] = useState("");
+export default function App() {
+  const [route, setRoute] = useState(window.location.hash);
 
   useEffect(() => {
-    verificarSaudeDaApi()
-      .then((resposta) => {
-        setStatus(`API conectada: ${resposta.status}`);
-      })
-      .catch(() => {
-        setErro("Não foi possível conectar ao backend.");
-      });
+    function updateRoute() {
+      setRoute(window.location.hash);
+    }
+
+    window.addEventListener("hashchange", updateRoute);
+
+    return () => {
+      window.removeEventListener("hashchange", updateRoute);
+    };
   }, []);
 
-  return (
-    <main>
-      <h1>Sistema de Reservas de Quadras</h1>
-
-      {erro ? <p>{erro}</p> : <p>{status}</p>}
-    </main>
-  );
+  return route === "#/cadastro" ? <RegisterPage /> : <LoginPage />;
 }
-
-export default App;
