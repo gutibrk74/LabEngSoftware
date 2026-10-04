@@ -1,5 +1,10 @@
 import AuthPage from "../components/AuthPage";
+import type { LoginResponse } from "../services/api";
 
-export default function LoginPage() {
-  return <AuthPage mode="login" />;
+type LoginPageProps = {
+  onLogin: (resposta: LoginResponse) => void;
+};
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
+  return <AuthPage mode="login" onLogin={onLogin} />;
 }

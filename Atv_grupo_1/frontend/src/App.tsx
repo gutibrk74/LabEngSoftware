@@ -1,21 +1,24 @@
-import { useEffect, useState } from "react";
+import { useHashRoute } from "./hooks/useHashRoute";
+import { useSessao } from "./hooks/useSessao";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
-  const [route, setRoute] = useState(window.location.hash);
+  const route = useHashRoute();
+  const { usuario, carregando, entrar, sair } = useSessao();
 
-  useEffect(() => {
-    function updateRoute() {
-      setRoute(window.location.hash);
-    }
+  if (carregando) {
+    return <p className="app-loading">Carregando...</p>;
+  }
 
-    window.addEventListener("hashchange", updateRoute);
+  if (!usuario) {
+    return route === "#/cadastro" ? (
+      <RegisterPage />
+    ) : (
+      <LoginPage onLogin={entrar} />
+    );
+  }
 
-    return () => {
-      window.removeEventListener("hashchange", updateRoute);
-    };
-  }, []);
-
-  return route === "#/cadastro" ? <RegisterPage /> : <LoginPage />;
+  return <HomePage usuario={usuario} onLogout={sair} />;
 }

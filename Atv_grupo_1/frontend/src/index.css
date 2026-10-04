@@ -20,3 +20,10 @@ body {
 #root {
   min-height: 100vh;
 }
+
+.app-loading {
+  margin: 0;
+  padding: 48px;
+  color: #b6b6bd;
+  text-align: center;
+}

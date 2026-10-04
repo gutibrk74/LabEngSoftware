@@ -2,9 +2,11 @@ import { useId, useState } from "react";
 import type { FormEvent } from "react";
 import "../styles/login.css";
 import { cadastrarUsuario, fazerLogin } from "../services/api";
+import type { LoginResponse } from "../services/api";
 
 type AuthPageProps = {
   mode: "login" | "cadastro";
+  onLogin?: (resposta: LoginResponse) => void;
 };
 
 function PasswordField({
@@ -61,7 +63,7 @@ function PasswordField({
   );
 }
 
-export default function AuthPage({ mode }: AuthPageProps) {
+export default function AuthPage({ mode, onLogin }: AuthPageProps) {
   const isRegister = mode === "cadastro";
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -119,13 +121,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
           senha,
         });
 
-        localStorage.setItem("access_token", resposta.access_token);
-        localStorage.setItem(
-          "usuario",
-          JSON.stringify(resposta.usuario),
-        );
-
-        setMessage(`Login realizado. Bem-vindo, ${resposta.usuario.nome}!`);
+        onLogin?.(resposta);
       }
     } catch (error) {
       setMessage(
