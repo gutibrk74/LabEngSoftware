@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 
 from app.core.exceptions import ConflitoError, DadosInvalidosError
 from app.core.tempo import agora
+from app.models.quadra import Quadra, TipoEsporte
 from app.models.reserva import Reserva
 from app.models.usuario import Usuario
 from app.repositories.reserva_repository import ReservaRepository
@@ -44,6 +45,29 @@ class ReservaService:
         return GradeHorariosResponse(
             quadra_id=quadra.id, data=data, horarios=horarios
         )
+
+    def buscar_quadras(
+        self, esporte: TipoEsporte | None, data: date | None
+    ) -> list[Quadra]:
+        quadras = self._quadra_service.listar(esporte=esporte)
+
+        if data is None:
+            return quadras
+
+        # Com data: só as quadras que ainda têm algum horário livre no dia.
+        momento = agora()
+        self._validar_data(data, momento)
+        ocupados = self._repositorio.horarios_ocupados_por_quadra(data)
+
+        return [
+            quadra
+            for quadra in quadras
+            if any(
+                hora not in ocupados.get(quadra.id, set())
+                and not self._ja_comecou(data, hora, momento)
+                for hora in range(quadra.hora_abertura, quadra.hora_fechamento)
+            )
+        ]
 
     def reservar(self, usuario: Usuario, dados: ReservaCreate) -> Reserva:
         quadra = self._quadra_service.obter(dados.quadra_id)
