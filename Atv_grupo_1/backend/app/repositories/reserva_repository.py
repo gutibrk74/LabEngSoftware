@@ -1,9 +1,13 @@
 from datetime import date
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ConflitoError
 from app.models.reserva import Reserva
+
+INDICE_HORARIO_UNICO = "uq_reservas_quadra_data_horario"
 
 
 class ReservaRepository:
@@ -17,3 +21,18 @@ class ReservaRepository:
             Reserva.status != "cancelada",
         )
         return set(self._db.scalars(consulta))
+
+    def adicionar(self, reserva: Reserva) -> Reserva:
+        try:
+            self._db.add(reserva)
+            self._db.commit()
+        except IntegrityError as erro:
+            self._db.rollback()
+
+            # Só o índice de horário vira 409; outros erros seguem adiante.
+            if INDICE_HORARIO_UNICO in str(erro.orig):
+                raise ConflitoError("Esse horário já foi reservado.") from None
+            raise
+
+        self._db.refresh(reserva)
+        return reserva

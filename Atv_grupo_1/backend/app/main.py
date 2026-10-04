@@ -2,7 +2,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import auth_router, quadras_admin_router, quadras_router
+from app.api import (
+    auth_router,
+    quadras_admin_router,
+    quadras_router,
+    reservas_router,
+)
 from app.core.exceptions import ErroDominio
 
 app = FastAPI(
@@ -44,6 +49,7 @@ app.add_exception_handler(ErroDominio, tratar_erro_dominio)
 app.include_router(auth_router)
 app.include_router(quadras_router)
 app.include_router(quadras_admin_router)
+app.include_router(reservas_router)
 
 
 @app.get("/")
