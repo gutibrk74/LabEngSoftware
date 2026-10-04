@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     Index,
     Numeric,
+    SmallInteger,
     String,
     func,
     text,
@@ -36,6 +37,11 @@ class Quadra(Base):
             "comprimento_m > 0 AND largura_m > 0",
             name="ck_quadras_dimensoes",
         ),
+        CheckConstraint(
+            "hora_abertura >= 0 AND hora_fechamento <= 24 "
+            "AND hora_abertura < hora_fechamento",
+            name="ck_quadras_horario",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -49,6 +55,14 @@ class Quadra(Base):
 
     # Valor base; as regras por dia/horário ficam na US09.
     preco_hora: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+    # Horário de funcionamento em horas cheias (ex.: 8 às 22).
+    hora_abertura: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, server_default=text("8")
+    )
+    hora_fechamento: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, server_default=text("22")
+    )
 
     coberta: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
