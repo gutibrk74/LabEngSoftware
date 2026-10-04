@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import "../styles/modal.css";
 import { atualizarQuadra, criarQuadra } from "../services/quadras";
 import type { Quadra, QuadraPayload, TipoEsporte } from "../services/quadras";
-import { ESPORTES } from "../utils/quadras";
+import { COMODIDADES, ESPORTES } from "../utils/quadras";
 
 type QuadraFormModalProps = {
   quadra?: Quadra;
@@ -13,13 +13,6 @@ type QuadraFormModalProps = {
 
 const HORAS_ABERTURA = Array.from({ length: 24 }, (_, hora) => hora);
 const HORAS_FECHAMENTO = Array.from({ length: 24 }, (_, hora) => hora + 1);
-
-const COMODIDADES = [
-  { campo: "coberta", rotulo: "Coberta" },
-  { campo: "iluminacao", rotulo: "Iluminação" },
-  { campo: "replay", rotulo: "Replay" },
-  { campo: "vestiario", rotulo: "Vestiário" },
-] as const;
 
 export default function QuadraFormModal({
   quadra,

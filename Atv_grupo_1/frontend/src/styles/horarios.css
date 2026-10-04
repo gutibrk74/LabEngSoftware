@@ -1,0 +1,259 @@
+.horarios-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.horarios-aviso {
+  margin: 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.horarios-aviso--erro {
+  color: #ff666b;
+}
+
+/* Dias e quadras (rolam na horizontal) */
+
+.seletor-dias,
+.seletor-quadras {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.seletor-dia {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 56px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #8a8a93;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.seletor-dia span {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+}
+
+.seletor-dia strong {
+  font-size: 18px;
+}
+
+.seletor-dia:hover {
+  background: #17171a;
+  color: #fff;
+}
+
+.seletor-dia--ativo,
+.seletor-dia--ativo:hover {
+  background: #d1131a;
+  color: #fff;
+}
+
+.seletor-quadra {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid #202024;
+  border-radius: 10px;
+  background: #111114;
+  color: #b6b6bd;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.seletor-quadra:hover {
+  border-color: #3a3a40;
+  color: #fff;
+}
+
+.seletor-quadra--ativa,
+.seletor-quadra--ativa:hover {
+  border-color: #d1131a;
+  background: rgb(209 19 26 / 14%);
+  color: #fff;
+}
+
+.seletor-dia:focus-visible,
+.seletor-quadra:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
+}
+
+/* Painel da quadra + grade */
+
+.horarios-conteudo {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.quadra-resumo {
+  position: sticky;
+  top: 96px;
+  padding: 16px;
+  border: 1px solid #202024;
+  border-radius: 16px;
+  background: #111114;
+}
+
+.quadra-resumo-capa {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  font-size: 48px;
+}
+
+.quadra-resumo h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.quadra-resumo-detalhe {
+  margin: 0;
+  color: #8a8a93;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.quadra-resumo-preco {
+  margin: 14px 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.quadra-resumo-preco span {
+  color: #8a8a93;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.quadra-resumo-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.quadra-resumo-itens li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.quadra-resumo-itens li span {
+  color: #4ade80;
+}
+
+.quadra-resumo-itens .quadra-resumo-item--ausente {
+  color: #6b6b73;
+  text-decoration: line-through;
+}
+
+.quadra-resumo-itens .quadra-resumo-item--ausente span {
+  color: #6b6b73;
+}
+
+.lista-horarios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.horario-linha {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.horario-hora {
+  color: #8a8a93;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.horario-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.horario-slot--livre {
+  border: 1px dashed #3a3a40;
+  color: #b6b6bd;
+}
+
+.horario-slot--reservado {
+  border: 1px solid rgb(209 19 26 / 35%);
+  background: rgb(209 19 26 / 10%);
+  color: #ff666b;
+}
+
+.horario-slot--encerrado {
+  border: 1px solid #1c1c20;
+  background: #0f0f11;
+  color: #5a5a62;
+}
+
+@media (max-width: 800px) {
+  .horarios-conteudo {
+    grid-template-columns: 1fr;
+  }
+
+  .quadra-resumo {
+    position: static;
+  }
+
+  /* No celular o painel fica compacto para a grade aparecer logo. */
+  .quadra-resumo-capa {
+    display: none;
+  }
+
+  .quadra-resumo-preco {
+    margin: 8px 0;
+    font-size: 22px;
+  }
+
+  .quadra-resumo-itens {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+
+  .quadra-resumo-itens li {
+    gap: 4px;
+  }
+}

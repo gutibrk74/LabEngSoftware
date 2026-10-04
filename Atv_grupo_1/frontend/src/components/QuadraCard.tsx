@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import "../styles/quadras.css";
 import type { Quadra } from "../services/quadras";
 import {
+  COMODIDADES,
   ESPORTES,
   formatarDimensoes,
   formatarHorario,
@@ -16,12 +17,9 @@ type QuadraCardProps = {
 export default function QuadraCard({ quadra, acoes }: QuadraCardProps) {
   const esporte = ESPORTES[quadra.tipo_esporte];
 
-  const comodidades = [
-    quadra.coberta && "Coberta",
-    quadra.iluminacao && "Iluminação",
-    quadra.replay && "Replay",
-    quadra.vestiario && "Vestiário",
-  ].filter(Boolean) as string[];
+  const comodidades = COMODIDADES.filter(({ campo }) => quadra[campo]).map(
+    ({ rotulo }) => rotulo,
+  );
 
   return (
     <article

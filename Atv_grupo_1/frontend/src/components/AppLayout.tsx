@@ -33,12 +33,21 @@ const ICONE_QUADRAS = (
   </svg>
 );
 
+const ICONE_HORARIOS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
 ];
 
