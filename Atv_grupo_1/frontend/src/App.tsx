@@ -3,6 +3,7 @@ import { useHashRoute } from "./hooks/useHashRoute";
 import { useSessao } from "./hooks/useSessao";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import QuadrasAdminPage from "./pages/QuadrasAdminPage";
 import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
@@ -18,6 +19,21 @@ export default function App() {
       <RegisterPage />
     ) : (
       <LoginPage onLogin={entrar} />
+    );
+  }
+
+  const isAdmin = usuario.perfil === "administrador";
+
+  if (isAdmin && route === "#/quadras") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Quadras"
+        onLogout={sair}
+      >
+        <QuadrasAdminPage />
+      </AppLayout>
     );
   }
 

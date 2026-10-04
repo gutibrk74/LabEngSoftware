@@ -25,12 +25,21 @@ const ICONE_INICIO = (
   </svg>
 );
 
+const ICONE_QUADRAS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M12 5v14" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
 ];
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
