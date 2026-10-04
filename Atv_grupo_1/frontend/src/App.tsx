@@ -1,3 +1,4 @@
+import AppLayout from "./components/AppLayout";
 import { useHashRoute } from "./hooks/useHashRoute";
 import { useSessao } from "./hooks/useSessao";
 import HomePage from "./pages/HomePage";
@@ -20,5 +21,14 @@ export default function App() {
     );
   }
 
-  return <HomePage usuario={usuario} onLogout={sair} />;
+  return (
+    <AppLayout
+      usuario={usuario}
+      rotaAtual="#/inicio"
+      titulo="Início"
+      onLogout={sair}
+    >
+      <HomePage usuario={usuario} />
+    </AppLayout>
+  );
 }

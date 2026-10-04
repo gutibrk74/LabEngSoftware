@@ -1,89 +1,11 @@
-.home-page {
-  min-height: 100vh;
-  min-height: 100svh;
-  background: #0b0b0b;
-  color: #fff;
-}
-
-.home-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 32px;
-  border-bottom: 1px solid #202024;
-}
-
-.home-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.home-brand img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-}
-
-.home-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.home-badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgb(209 19 26 / 12%);
-  color: #ff666b;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.home-logout {
-  padding: 8px 16px;
-  border: 1px solid #2c2c31;
-  border-radius: 10px;
-  background: transparent;
-  color: #fff;
-  font: inherit;
+.home-saudacao {
+  margin: 0 0 6px;
+  color: #8a8a93;
   font-size: 14px;
-  cursor: pointer;
-  transition: border-color 150ms ease;
 }
 
-.home-logout:hover {
-  border-color: #d1131a;
-}
-
-.home-logout:focus-visible {
-  outline: 2px solid #d1131a;
-  outline-offset: 2px;
-}
-
-.home-content {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 48px 32px;
-}
-
-.home-content h1 {
-  margin: 0 0 8px;
-  font-size: clamp(28px, 4vw, 40px);
-}
-
-.home-content p {
+.home-titulo {
   margin: 0;
-  color: #b6b6bd;
-}
-
-@media (max-width: 600px) {
-  .home-header,
-  .home-content {
-    padding-inline: 16px;
-  }
+  font-size: clamp(26px, 3.5vw, 32px);
+  letter-spacing: -0.5px;
 }
