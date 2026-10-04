@@ -1,7 +1,6 @@
-import { obterToken } from "./sessao";
+import { encerrarSessaoExpirada, obterToken } from "./sessao";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+export const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 type CadastroPayload = {
   nome: string;
@@ -45,7 +44,11 @@ export class ErroApi extends Error {
   }
 }
 
-async function tratarResposta<T>(resposta: Response): Promise<T> {
+export async function tratarResposta<T>(resposta: Response): Promise<T> {
+  if (resposta.status === 204) {
+    return undefined as T;
+  }
+
   const corpo = await resposta.json();
 
   if (!resposta.ok) {
@@ -65,6 +68,28 @@ function cabecalhoAutenticacao(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+type OpcoesRequisicao = Omit<RequestInit, "headers"> & {
+  headers?: Record<string, string>;
+};
+
+// Usado em toda chamada que exige login: envia o token e, se a API
+// responder 401 (token expirado ou inválido), encerra a sessão.
+export async function fetchAutenticado(
+  caminho: string,
+  opcoes: OpcoesRequisicao = {},
+): Promise<Response> {
+  const resposta = await fetch(`${API_URL}${caminho}`, {
+    ...opcoes,
+    headers: { ...opcoes.headers, ...cabecalhoAutenticacao() },
+  });
+
+  if (resposta.status === 401) {
+    encerrarSessaoExpirada();
+  }
+
+  return resposta;
+}
+
 export async function cadastrarUsuario(
   dados: CadastroPayload,
 ): Promise<Usuario> {
@@ -79,9 +104,7 @@ export async function cadastrarUsuario(
   return tratarResposta<Usuario>(resposta);
 }
 
-export async function fazerLogin(
-  dados: LoginPayload,
-): Promise<LoginResponse> {
+export async function fazerLogin(dados: LoginPayload): Promise<LoginResponse> {
   const resposta = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
@@ -94,9 +117,7 @@ export async function fazerLogin(
 }
 
 export async function buscarUsuarioAtual(): Promise<Usuario> {
-  const resposta = await fetch(`${API_URL}/auth/me`, {
-    headers: cabecalhoAutenticacao(),
-  });
+  const resposta = await fetchAutenticado("/auth/me");
 
   return tratarResposta<Usuario>(resposta);
 }

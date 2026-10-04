@@ -1,0 +1,197 @@
+/* Página de gestão */
+
+.quadras-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.quadras-cabecalho h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 28px);
+  letter-spacing: -0.5px;
+}
+
+.quadras-cabecalho p {
+  margin: 6px 0 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.quadras-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0 28px;
+}
+
+.resumo-card {
+  padding: 18px 20px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.resumo-card span {
+  display: block;
+  color: #8a8a93;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.resumo-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 26px;
+}
+
+.resumo-card--ativas {
+  border-color: rgb(34 197 94 / 25%);
+  background: rgb(34 197 94 / 6%);
+}
+
+.resumo-card--ativas strong {
+  color: #4ade80;
+}
+
+.resumo-card--inativas {
+  border-color: rgb(209 19 26 / 30%);
+  background: rgb(209 19 26 / 6%);
+}
+
+.resumo-card--inativas strong {
+  color: #ff666b;
+}
+
+.quadras-aviso {
+  margin: 0 0 20px;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.quadras-aviso--erro {
+  color: #ff666b;
+}
+
+.quadras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Card de quadra */
+
+.quadra-card {
+  overflow: hidden;
+  border: 1px solid #202024;
+  border-radius: 16px;
+  background: #111114;
+}
+
+.quadra-card--inativa .quadra-capa {
+  filter: grayscale(0.85);
+  opacity: 0.6;
+}
+
+.quadra-capa {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  aspect-ratio: 16 / 9;
+  padding: 14px 16px;
+}
+
+.quadra-emoji {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 56px;
+  opacity: 0.35;
+  transform: translate(-50%, -60%);
+}
+
+.quadra-preco,
+.quadra-status {
+  position: absolute;
+  top: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quadra-preco {
+  right: 12px;
+  background: #d1131a;
+  color: #fff;
+}
+
+.quadra-status {
+  left: 12px;
+  background: #1c1c20;
+  color: #b6b6bd;
+}
+
+.quadra-capa-info {
+  position: relative;
+}
+
+.quadra-capa-info h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 60%);
+}
+
+.quadra-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quadra-tags li {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 45%);
+  color: #e4e4e7;
+  font-size: 11px;
+}
+
+.quadra-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  color: #8a8a93;
+  font-size: 13px;
+}
+
+.quadra-rodape > span {
+  flex: 1 1 100%;
+}
+
+.quadra-acoes {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .quadras-resumo {
+    gap: 10px;
+  }
+
+  .resumo-card {
+    padding: 14px;
+  }
+
+  .resumo-card strong {
+    font-size: 22px;
+  }
+}
