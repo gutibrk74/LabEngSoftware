@@ -1,3 +1,4 @@
+from app.repositories.quadra_repository import QuadraRepository
 from app.repositories.usuario_repository import UsuarioRepository
 
-__all__ = ["UsuarioRepository"]
+__all__ = ["QuadraRepository", "UsuarioRepository"]

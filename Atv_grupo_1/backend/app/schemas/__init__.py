@@ -1,3 +1,4 @@
+from app.schemas.quadra import QuadraCreate, QuadraResponse, QuadraUpdate
 from app.schemas.usuario import (
     LoginRequest,
     TokenResponse,
@@ -7,6 +8,9 @@ from app.schemas.usuario import (
 
 __all__ = [
     "LoginRequest",
+    "QuadraCreate",
+    "QuadraResponse",
+    "QuadraUpdate",
     "TokenResponse",
     "UsuarioCreate",
     "UsuarioResponse",

@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal, get_args
 
 from sqlalchemy import (
     Boolean,
@@ -16,7 +17,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
 
-ESPORTES = ("futebol", "futsal", "tenis", "volei", "basquete")
+TipoEsporte = Literal["futebol", "futsal", "tenis", "volei", "basquete"]
+ESPORTES: tuple[str, ...] = get_args(TipoEsporte)
 
 
 class Quadra(Base):
