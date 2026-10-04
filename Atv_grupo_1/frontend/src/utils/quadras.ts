@@ -58,6 +58,10 @@ export function formatarPreco(valor: number): string {
     : formatoPrecoCentavos.format(valor);
 }
 
+export function formatarHorario(abertura: number, fechamento: number): string {
+  return `${abertura}h–${fechamento}h`;
+}
+
 export function formatarDimensoes(
   comprimento: number,
   largura: number,

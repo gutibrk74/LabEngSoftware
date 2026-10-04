@@ -11,6 +11,9 @@ type QuadraFormModalProps = {
   onSalvar: () => void;
 };
 
+const HORAS_ABERTURA = Array.from({ length: 24 }, (_, hora) => hora);
+const HORAS_FECHAMENTO = Array.from({ length: 24 }, (_, hora) => hora + 1);
+
 const COMODIDADES = [
   { campo: "coberta", rotulo: "Coberta" },
   { campo: "iluminacao", rotulo: "Iluminação" },
@@ -46,6 +49,8 @@ export default function QuadraFormModal({
       comprimento_m: Number(data.get("comprimento_m")),
       largura_m: Number(data.get("largura_m")),
       preco_hora: Number(data.get("preco_hora")),
+      hora_abertura: Number(data.get("hora_abertura")),
+      hora_fechamento: Number(data.get("hora_fechamento")),
       coberta: data.has("coberta"),
       iluminacao: data.has("iluminacao"),
       replay: data.has("replay"),
@@ -182,6 +187,38 @@ export default function QuadraFormModal({
               defaultValue={quadra?.preco_hora}
               required
             />
+          </div>
+        </div>
+
+        <div className="form-linha">
+          <div className="form-campo">
+            <label htmlFor="quadra-abertura">Abre às</label>
+            <select
+              id="quadra-abertura"
+              name="hora_abertura"
+              defaultValue={quadra?.hora_abertura ?? 8}
+            >
+              {HORAS_ABERTURA.map((hora) => (
+                <option key={hora} value={hora}>
+                  {hora}h
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-campo">
+            <label htmlFor="quadra-fechamento">Fecha às</label>
+            <select
+              id="quadra-fechamento"
+              name="hora_fechamento"
+              defaultValue={quadra?.hora_fechamento ?? 22}
+            >
+              {HORAS_FECHAMENTO.map((hora) => (
+                <option key={hora} value={hora}>
+                  {hora}h
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

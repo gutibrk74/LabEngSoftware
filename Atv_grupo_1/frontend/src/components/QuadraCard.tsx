@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 import "../styles/quadras.css";
 import type { Quadra } from "../services/quadras";
-import { ESPORTES, formatarDimensoes, formatarPreco } from "../utils/quadras";
+import {
+  ESPORTES,
+  formatarDimensoes,
+  formatarHorario,
+  formatarPreco,
+} from "../utils/quadras";
 
 type QuadraCardProps = {
   quadra: Quadra;
@@ -49,7 +54,13 @@ export default function QuadraCard({ quadra, acoes }: QuadraCardProps) {
       <footer className="quadra-rodape">
         <span>
           {esporte.nome} · {quadra.piso} ·{" "}
-          {formatarDimensoes(quadra.comprimento_m, quadra.largura_m)}
+          <span className="sem-quebra">
+            {formatarDimensoes(quadra.comprimento_m, quadra.largura_m)}
+          </span>{" "}
+          ·{" "}
+          <span className="sem-quebra">
+            {formatarHorario(quadra.hora_abertura, quadra.hora_fechamento)}
+          </span>
         </span>
 
         {acoes && <div className="quadra-acoes">{acoes}</div>}

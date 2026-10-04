@@ -176,6 +176,10 @@
   flex: 1 1 100%;
 }
 
+.sem-quebra {
+  white-space: nowrap;
+}
+
 .quadra-acoes {
   display: flex;
   gap: 8px;

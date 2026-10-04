@@ -10,6 +10,8 @@ export type Quadra = {
   comprimento_m: number;
   largura_m: number;
   preco_hora: number;
+  hora_abertura: number;
+  hora_fechamento: number;
   coberta: boolean;
   iluminacao: boolean;
   replay: boolean;
