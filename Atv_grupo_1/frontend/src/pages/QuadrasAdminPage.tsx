@@ -3,14 +3,14 @@ import "../styles/quadras.css";
 import ConfirmModal from "../components/ConfirmModal";
 import QuadraCard from "../components/QuadraCard";
 import QuadraFormModal from "../components/QuadraFormModal";
-import { useQuadrasAdmin } from "../hooks/useQuadrasAdmin";
+import { useQuadras } from "../hooks/useQuadras";
 import { atualizarQuadra, inativarQuadra } from "../services/quadras";
 import type { Quadra } from "../services/quadras";
 
 type Formulario = { aberto: false } | { aberto: true; quadra?: Quadra };
 
 export default function QuadrasAdminPage() {
-  const { quadras, carregando, erro, recarregar } = useQuadrasAdmin();
+  const { quadras, carregando, erro, recarregar } = useQuadras(true);
   const [formulario, setFormulario] = useState<Formulario>({ aberto: false });
   const [quadraParaInativar, setQuadraParaInativar] = useState<Quadra | null>(
     null,

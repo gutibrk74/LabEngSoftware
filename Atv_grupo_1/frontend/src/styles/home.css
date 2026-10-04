@@ -9,3 +9,39 @@
   font-size: clamp(26px, 3.5vw, 32px);
   letter-spacing: -0.5px;
 }
+
+.home-secao {
+  margin-top: 32px;
+}
+
+.home-secao-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.home-secao-cabecalho h3 {
+  margin: 0;
+  color: #8a8a93;
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.home-secao-cabecalho a {
+  color: #ff666b;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.home-secao-cabecalho a:hover {
+  text-decoration: underline;
+}
+
+.home-secao-cabecalho a:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
+}

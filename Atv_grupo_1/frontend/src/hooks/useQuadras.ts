@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { listarQuadrasAdmin } from "../services/quadras";
+import { listarQuadras, listarQuadrasAdmin } from "../services/quadras";
 import type { Quadra } from "../services/quadras";
 
-export function useQuadrasAdmin() {
+// incluirInativas=true usa a rota de admin (exige perfil administrador).
+export function useQuadras(incluirInativas: boolean) {
   const [quadras, setQuadras] = useState<Quadra[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -11,7 +12,9 @@ export function useQuadrasAdmin() {
   useEffect(() => {
     let ativo = true;
 
-    listarQuadrasAdmin()
+    const buscar = incluirInativas ? listarQuadrasAdmin : listarQuadras;
+
+    buscar()
       .then((dados) => {
         if (ativo) {
           setQuadras(dados);
@@ -36,7 +39,7 @@ export function useQuadrasAdmin() {
     return () => {
       ativo = false;
     };
-  }, [versao]);
+  }, [incluirInativas, versao]);
 
   const recarregar = useCallback(() => {
     setCarregando(true);
