@@ -1,17 +1,42 @@
+import { useState } from "react";
 import "../styles/quadras.css";
 import QuadraCard from "../components/QuadraCard";
+import QuadraFormModal from "../components/QuadraFormModal";
 import { useQuadrasAdmin } from "../hooks/useQuadrasAdmin";
+import type { Quadra } from "../services/quadras";
+
+type Formulario = { aberto: false } | { aberto: true; quadra?: Quadra };
 
 export default function QuadrasAdminPage() {
-  const { quadras, carregando, erro } = useQuadrasAdmin();
+  const { quadras, carregando, erro, recarregar } = useQuadrasAdmin();
+  const [formulario, setFormulario] = useState<Formulario>({ aberto: false });
+
+  function fecharFormulario() {
+    setFormulario({ aberto: false });
+  }
+
+  function aoSalvar() {
+    fecharFormulario();
+    recarregar();
+  }
 
   const ativas = quadras.filter((quadra) => quadra.ativa).length;
 
   return (
     <section className="quadras-page">
       <header className="quadras-cabecalho">
-        <h2>Gestão de Quadras</h2>
-        <p>Cadastre, edite e inative os espaços do complexo.</p>
+        <div>
+          <h2>Gestão de Quadras</h2>
+          <p>Cadastre, edite e inative os espaços do complexo.</p>
+        </div>
+
+        <button
+          className="botao botao--primario"
+          type="button"
+          onClick={() => setFormulario({ aberto: true })}
+        >
+          + Nova quadra
+        </button>
       </header>
 
       <div className="quadras-resumo">
@@ -43,9 +68,29 @@ export default function QuadrasAdminPage() {
 
       <div className="quadras-grid">
         {quadras.map((quadra) => (
-          <QuadraCard key={quadra.id} quadra={quadra} />
+          <QuadraCard
+            key={quadra.id}
+            quadra={quadra}
+            acoes={
+              <button
+                className="botao botao--secundario botao--pequeno"
+                type="button"
+                onClick={() => setFormulario({ aberto: true, quadra })}
+              >
+                Editar
+              </button>
+            }
+          />
         ))}
       </div>
+
+      {formulario.aberto && (
+        <QuadraFormModal
+          quadra={formulario.quadra}
+          onFechar={fecharFormulario}
+          onSalvar={aoSalvar}
+        />
+      )}
     </section>
   );
 }
