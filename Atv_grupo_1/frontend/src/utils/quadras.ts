@@ -34,19 +34,28 @@ export const ESPORTES: Record<TipoEsporte, InfoEsporte> = {
   },
 };
 
-const formatoPreco = new Intl.NumberFormat("pt-BR", {
+const formatoPrecoInteiro = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 0,
+});
+
+const formatoPrecoCentavos = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2,
 });
 
 const formatoMedida = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
 });
 
+// Valores inteiros sem centavos (R$ 80); com centavos, sempre duas casas
+// (R$ 95,50).
 export function formatarPreco(valor: number): string {
-  return formatoPreco.format(valor);
+  return Number.isInteger(valor)
+    ? formatoPrecoInteiro.format(valor)
+    : formatoPrecoCentavos.format(valor);
 }
 
 export function formatarDimensoes(
