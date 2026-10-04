@@ -1,3 +1,5 @@
+import { obterToken } from "./sessao";
+
 const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -33,6 +35,16 @@ export type LoginResponse = {
   usuario: Usuario;
 };
 
+export class ErroApi extends Error {
+  readonly status: number;
+
+  constructor(mensagem: string, status: number) {
+    super(mensagem);
+    this.name = "ErroApi";
+    this.status = status;
+  }
+}
+
 async function tratarResposta<T>(resposta: Response): Promise<T> {
   const corpo = await resposta.json();
 
@@ -42,10 +54,15 @@ async function tratarResposta<T>(resposta: Response): Promise<T> {
         ? corpo.detail
         : "Não foi possível concluir a operação.";
 
-    throw new Error(detalhe);
+    throw new ErroApi(detalhe, resposta.status);
   }
 
   return corpo as T;
+}
+
+function cabecalhoAutenticacao(): Record<string, string> {
+  const token = obterToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export async function cadastrarUsuario(
@@ -74,4 +91,12 @@ export async function fazerLogin(
   });
 
   return tratarResposta<LoginResponse>(resposta);
+}
+
+export async function buscarUsuarioAtual(): Promise<Usuario> {
+  const resposta = await fetch(`${API_URL}/auth/me`, {
+    headers: cabecalhoAutenticacao(),
+  });
+
+  return tratarResposta<Usuario>(resposta);
 }
