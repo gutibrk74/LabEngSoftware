@@ -1,50 +1,70 @@
 import { useCallback, useEffect, useState } from "react";
 import { listarQuadras, listarQuadrasAdmin } from "../services/quadras";
-import type { Quadra } from "../services/quadras";
+import type { FiltrosQuadras, Quadra } from "../services/quadras";
+
+type Resultado = {
+  chave: string;
+  quadras: Quadra[];
+  erro: string;
+};
 
 // incluirInativas=true usa a rota de admin (exige perfil administrador).
-export function useQuadras(incluirInativas: boolean) {
-  const [quadras, setQuadras] = useState<Quadra[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState("");
+// Os filtros (esporte e data) valem para a lista pública.
+// Enquanto o resultado guardado não for dos filtros atuais, está carregando;
+// a lista anterior continua na tela até a nova chegar.
+export function useQuadras(
+  incluirInativas: boolean,
+  filtros: FiltrosQuadras = {},
+) {
+  const esporte = filtros.esporte || undefined;
+  const data = filtros.data || undefined;
+
+  const [resultado, setResultado] = useState<Resultado | null>(null);
   const [versao, setVersao] = useState(0);
+
+  const chave = `${incluirInativas}|${esporte ?? ""}|${data ?? ""}`;
 
   useEffect(() => {
     let ativo = true;
+    const chaveBusca = `${incluirInativas}|${esporte ?? ""}|${data ?? ""}`;
+    const busca = incluirInativas
+      ? listarQuadrasAdmin()
+      : listarQuadras({ esporte, data });
 
-    const buscar = incluirInativas ? listarQuadrasAdmin : listarQuadras;
-
-    buscar()
-      .then((dados) => {
+    busca
+      .then((quadras) => {
         if (ativo) {
-          setQuadras(dados);
-          setErro("");
+          setResultado({ chave: chaveBusca, quadras, erro: "" });
         }
       })
       .catch((error: unknown) => {
         if (ativo) {
-          setErro(
-            error instanceof Error
-              ? error.message
-              : "Não foi possível carregar as quadras.",
-          );
-        }
-      })
-      .finally(() => {
-        if (ativo) {
-          setCarregando(false);
+          setResultado({
+            chave: chaveBusca,
+            quadras: [],
+            erro:
+              error instanceof Error
+                ? error.message
+                : "Não foi possível carregar as quadras.",
+          });
         }
       });
 
     return () => {
       ativo = false;
     };
-  }, [incluirInativas, versao]);
+  }, [incluirInativas, esporte, data, versao]);
 
   const recarregar = useCallback(() => {
-    setCarregando(true);
     setVersao((atual) => atual + 1);
   }, []);
 
-  return { quadras, carregando, erro, recarregar };
+  const atual = resultado?.chave === chave;
+
+  return {
+    quadras: resultado?.quadras ?? [],
+    carregando: !atual,
+    erro: atual ? resultado.erro : "",
+    recarregar,
+  };
 }
