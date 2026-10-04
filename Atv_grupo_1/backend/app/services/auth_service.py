@@ -6,6 +6,7 @@ from app.core.exceptions import (
 )
 from app.core.security import (
     criar_token_acesso,
+    decodificar_token,
     gerar_hash_senha,
     verificar_senha,
 )
@@ -70,3 +71,16 @@ class AuthService:
             token_type="bearer",
             usuario=UsuarioResponse.model_validate(usuario),
         )
+
+    def obter_usuario_do_token(self, token: str) -> Usuario:
+        dados_token = decodificar_token(token)
+
+        if dados_token is None:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        usuario = self._repositorio.buscar_por_id(dados_token.usuario_id)
+
+        if usuario is None or not usuario.ativo:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        return usuario
