@@ -135,7 +135,12 @@
   cursor: pointer;
 }
 
-.modal-fechar:hover {
+.modal-fechar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modal-fechar:hover:not(:disabled) {
   background: #1c1c20;
   color: #fff;
 }

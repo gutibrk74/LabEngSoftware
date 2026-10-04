@@ -27,13 +27,29 @@ export default function ConfirmarReservaModal({
   const confirmada = reserva !== null;
   const [erro, setErro] = useState("");
 
+  // Enquanto a reserva está sendo gravada a janela não pode fechar: a grade
+  // seria recarregada antes da gravação e mostraria o horário como livre.
+  // Se o navegador fechar mesmo assim, o fechamento espera a resposta.
+  const enviandoRef = useRef(false);
+  const fecharAoTerminarRef = useRef(false);
+
   useEffect(() => {
     dialogRef.current?.showModal();
   }, []);
 
+  function fechar() {
+    if (enviandoRef.current) {
+      fecharAoTerminarRef.current = true;
+      return;
+    }
+
+    onFechar();
+  }
+
   async function confirmar() {
     setErro("");
     setEnviando(true);
+    enviandoRef.current = true;
 
     try {
       setReserva(
@@ -51,7 +67,12 @@ export default function ConfirmarReservaModal({
           : "Não foi possível concluir a reserva.",
       );
     } finally {
+      enviandoRef.current = false;
       setEnviando(false);
+
+      if (fecharAoTerminarRef.current) {
+        onFechar();
+      }
     }
   }
 
@@ -60,7 +81,13 @@ export default function ConfirmarReservaModal({
       ref={dialogRef}
       className="modal modal--pequeno"
       aria-labelledby="reserva-titulo"
-      onClose={onFechar}
+      onCancel={(event) => {
+        // Bloqueia o Esc durante o envio.
+        if (enviandoRef.current) {
+          event.preventDefault();
+        }
+      }}
+      onClose={fechar}
     >
       <div className="modal-form">
         <header className="modal-cabecalho">
@@ -72,7 +99,8 @@ export default function ConfirmarReservaModal({
             className="modal-fechar"
             type="button"
             aria-label="Fechar"
-            onClick={onFechar}
+            onClick={fechar}
+            disabled={enviando}
           >
             ×
           </button>
@@ -122,7 +150,7 @@ export default function ConfirmarReservaModal({
             <button
               className="botao botao--primario"
               type="button"
-              onClick={onFechar}
+              onClick={fechar}
               autoFocus
             >
               Concluir
@@ -132,7 +160,8 @@ export default function ConfirmarReservaModal({
               <button
                 className="botao botao--secundario"
                 type="button"
-                onClick={onFechar}
+                onClick={fechar}
+                disabled={enviando}
               >
                 Voltar
               </button>
