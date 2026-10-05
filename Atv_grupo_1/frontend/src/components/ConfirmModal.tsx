@@ -46,6 +46,11 @@ export default function ConfirmModal({
       className="modal modal--pequeno"
       aria-labelledby="confirm-titulo"
       aria-describedby="confirm-mensagem"
+      onCancel={(event) => {
+        if (processando) {
+          event.preventDefault();
+        }
+      }}
       onClose={onFechar}
     >
       <div className="modal-form">
@@ -67,6 +72,7 @@ export default function ConfirmModal({
           <button
             className="botao botao--secundario"
             type="button"
+            disabled={processando}
             onClick={onFechar}
             autoFocus
           >
