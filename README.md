@@ -119,21 +119,37 @@ npm run dev        # http://localhost:5173
 
 ---
 
+## Testes
+
+O backend tem **97 testes automatizados** (pytest) cobrindo autenticação, CRUD de quadras, busca, grade de horários, regras de reserva e concorrência, executados contra um banco PostgreSQL de testes separado.
+
+```bash
+cd Atv_grupo_1/backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+Resultados, casos de teste e o detalhamento do teste de concorrência (50 pedidos simultâneos em 5 rodadas: 5 aprovados, 45 barrados, nenhuma reserva duplicada) estão em
+**[Atv_grupo_1/documents/TestExecutionReport.md](Atv_grupo_1/documents/TestExecutionReport.md)**.
+
+---
+
 ## Estrutura do repositório
 
 ```text
 Atv_grupo_1/
 ├── backend/
 │   ├── alembic/versions/   # migrações do banco
-│   └── app/
-│       ├── api/routes/     # rotas HTTP
-│       ├── core/           # configuração, segurança, exceções, horário
-│       ├── db/             # conexão com o banco
-│       ├── models/         # entidades
-│       ├── repositories/   # acesso a dados (Repository Pattern)
-│       ├── schemas/        # entrada/saída da API
-│       ├── scripts/        # utilitários (promover administrador)
-│       └── services/       # regras de negócio
+│   ├── app/
+│   │   ├── api/routes/     # rotas HTTP
+│   │   ├── core/           # configuração, segurança, exceções, horário
+│   │   ├── db/             # conexão com o banco
+│   │   ├── models/         # entidades
+│   │   ├── repositories/   # acesso a dados (Repository Pattern)
+│   │   ├── schemas/        # entrada/saída da API
+│   │   ├── scripts/        # utilitários (promover administrador)
+│   │   └── services/       # regras de negócio
+│   └── tests/              # testes automatizados (pytest)
 ├── frontend/
 │   └── src/
 │       ├── components/     # componentes reutilizáveis

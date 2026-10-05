@@ -189,7 +189,24 @@ npm install
 
 ---
 
-## 8. Problemas comuns
+## 8. Testes automatizados
+
+Os testes do backend ficam em `Atv_grupo_1/backend/tests/` e usam o **pytest**. Na pasta `Atv_grupo_1/backend`, com o ambiente virtual ativado e o PostgreSQL rodando:
+
+```bash
+pip install -r requirements-dev.txt   # só na primeira vez
+pytest
+```
+
+- Os testes criam e usam um banco separado, `reserva_quadras_test`, com as mesmas credenciais do `.env`. **O banco de desenvolvimento não é alterado.**
+- Para ver cada teste e o resultado das rodadas de concorrência: `pytest -v -s`.
+- Para rodar só um arquivo: `pytest tests/test_reservas.py`.
+
+O resultado da última execução está em [`TestExecutionReport.md`](TestExecutionReport.md).
+
+---
+
+## 9. Problemas comuns
 
 | Sintoma | Causa provável | Solução |
 | --- | --- | --- |
