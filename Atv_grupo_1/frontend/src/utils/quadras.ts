@@ -34,6 +34,13 @@ export const ESPORTES: Record<TipoEsporte, InfoEsporte> = {
   },
 };
 
+export const COMODIDADES = [
+  { campo: "coberta", rotulo: "Coberta" },
+  { campo: "iluminacao", rotulo: "Iluminação" },
+  { campo: "replay", rotulo: "Replay" },
+  { campo: "vestiario", rotulo: "Vestiário" },
+] as const;
+
 const formatoPrecoInteiro = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
@@ -56,6 +63,10 @@ export function formatarPreco(valor: number): string {
   return Number.isInteger(valor)
     ? formatoPrecoInteiro.format(valor)
     : formatoPrecoCentavos.format(valor);
+}
+
+export function formatarHorario(abertura: number, fechamento: number): string {
+  return `${abertura}h–${fechamento}h`;
 }
 
 export function formatarDimensoes(

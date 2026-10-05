@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import "../styles/layout.css";
+import { useRelogio } from "../hooks/useRelogio";
 import type { Usuario } from "../services/api";
+import { FUSO_HORARIO } from "../utils/datas";
 
 type ItemMenu = {
   rota: string;
@@ -33,16 +35,26 @@ const ICONE_QUADRAS = (
   </svg>
 );
 
+const ICONE_HORARIOS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
 ];
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: FUSO_HORARIO,
   weekday: "long",
   day: "2-digit",
   month: "long",
@@ -65,6 +77,8 @@ export default function AppLayout({
 }: AppLayoutProps) {
   const isAdmin = usuario.perfil === "administrador";
   const menu = isAdmin ? MENU_ADMIN : MENU_ATLETA;
+  // Redesenha na virada da hora para a data do topo acompanhar o dia.
+  useRelogio();
 
   return (
     <div className="app-shell">

@@ -2,6 +2,7 @@ import AppLayout from "./components/AppLayout";
 import { useHashRoute } from "./hooks/useHashRoute";
 import { useSessao } from "./hooks/useSessao";
 import HomePage from "./pages/HomePage";
+import HorariosPage from "./pages/HorariosPage";
 import LoginPage from "./pages/LoginPage";
 import QuadrasAdminPage from "./pages/QuadrasAdminPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -23,6 +24,19 @@ export default function App() {
   }
 
   const isAdmin = usuario.perfil === "administrador";
+
+  if (route === "#/horarios") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Grade de Horários"
+        onLogout={sair}
+      >
+        <HorariosPage />
+      </AppLayout>
+    );
+  }
 
   if (isAdmin && route === "#/quadras") {
     return (

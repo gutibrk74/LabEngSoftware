@@ -14,6 +14,8 @@ class QuadraBase(BaseModel):
     comprimento_m: Decimal = Field(gt=0, max_digits=5, decimal_places=2)
     largura_m: Decimal = Field(gt=0, max_digits=5, decimal_places=2)
     preco_hora: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    hora_abertura: int = Field(default=8, ge=0, le=23)
+    hora_fechamento: int = Field(default=22, ge=1, le=24)
     coberta: bool = False
     iluminacao: bool = False
     replay: bool = False
@@ -36,6 +38,8 @@ class QuadraResponse(BaseModel):
     comprimento_m: float
     largura_m: float
     preco_hora: float
+    hora_abertura: int
+    hora_fechamento: int
     coberta: bool
     iluminacao: bool
     replay: bool

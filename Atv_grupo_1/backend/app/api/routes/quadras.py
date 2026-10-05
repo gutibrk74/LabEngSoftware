@@ -1,8 +1,11 @@
+from datetime import date
+
 from fastapi import APIRouter, status
 
-from app.api.deps import AdministradorAtual, QuadraServiceDep
+from app.api.deps import AdministradorAtual, QuadraServiceDep, ReservaServiceDep
 from app.models.quadra import Quadra
 from app.schemas.quadra import QuadraCreate, QuadraResponse, QuadraUpdate
+from app.schemas.reserva import GradeHorariosResponse
 
 # Consulta aberta: só quadras ativas.
 router = APIRouter(prefix="/quadras", tags=["Quadras"])
@@ -19,6 +22,13 @@ def listar_quadras(service: QuadraServiceDep) -> list[Quadra]:
 @router.get("/{quadra_id}", response_model=QuadraResponse)
 def obter_quadra(quadra_id: int, service: QuadraServiceDep) -> Quadra:
     return service.obter(quadra_id)
+
+
+@router.get("/{quadra_id}/horarios", response_model=GradeHorariosResponse)
+def obter_grade_horarios(
+    quadra_id: int, data: date, service: ReservaServiceDep
+) -> GradeHorariosResponse:
+    return service.montar_grade(quadra_id, data)
 
 
 @admin_router.get("", response_model=list[QuadraResponse])
