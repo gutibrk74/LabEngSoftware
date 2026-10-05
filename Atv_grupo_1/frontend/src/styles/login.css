@@ -1,0 +1,306 @@
+.login-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  background: #0b0b0b;
+  color: #fff;
+}
+
+.login-cover {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  padding: 52px;
+  background-color: #080808;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgb(0 0 0 / 25%) 0%,
+      rgb(0 0 0 / 20%) 40%,
+      rgb(0 0 0 / 85%) 100%
+    ),
+    url("/images/campo-login.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.login-brand {
+  max-width: 500px;
+}
+
+.login-brand h1 {
+  margin: 0 0 18px;
+  font-size: clamp(36px, 4vw, 54px);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+}
+
+.login-tagline {
+  max-width: 390px;
+  margin: 0;
+  color: #b6b6bd;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.login-panel {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 36px 48px;
+  background: #0b0b0b;
+  border-left: 1px solid #202024;
+}
+
+.login-content {
+  width: 100%;
+  max-width: 368px;
+}
+
+.auth-logo {
+  display: block;
+  width: 190px;
+  max-width: 65%;
+  height: auto;
+  margin: 0 auto 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  object-fit: contain;
+}
+
+.login-heading {
+  margin-bottom: 32px;
+}
+
+.login-heading h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: -0.6px;
+}
+
+.login-heading p {
+  margin: 0;
+  color: #a2a2ad;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 8px;
+}
+
+.login-field label {
+  color: #aaaab4;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.login-field input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #28282f;
+  border-radius: 10px;
+  background: #17171c;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 150ms ease;
+}
+
+.login-field input::placeholder {
+  color: #858591;
+}
+
+.login-field input:hover {
+  border-color: #494951;
+}
+
+.login-field input:focus-visible {
+  border-color: #d1131a;
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
+}
+
+.password-control {
+  position: relative;
+}
+
+.password-control input {
+  padding-right: 50px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #ff454b;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: rgb(209 19 26 / 12%);
+}
+
+.login-submit {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 2px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #d1131a;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.login-submit:hover {
+  background: #b51016;
+}
+
+.login-submit:active {
+  background: #980d13;
+}
+
+.auth-switch {
+  margin: 16px 0 0;
+  color: #ff666b;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.auth-switch a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-switch a:hover {
+  color: #fff;
+}
+
+.password-toggle:focus-visible,
+.login-submit:focus-visible,
+.auth-switch a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.auth-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auth-hint,
+.login-message {
+  margin: 0;
+  color: #b6b6bf;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.login-panel--register {
+  padding-top: 24px;
+}
+
+.login-panel--register .auth-logo {
+  width: 135px;
+  margin-bottom: 18px;
+}
+
+.login-panel--register .login-heading {
+  margin-bottom: 24px;
+}
+
+.login-panel--register .login-form {
+  gap: 14px;
+}
+
+.login-brand-logo {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  object-fit: contain;
+}
+
+.login-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: minmax(0, 1fr) 390px;
+  }
+
+  .login-cover {
+    padding: 32px;
+  }
+
+  .login-panel {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 700px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-cover {
+    display: none;
+  }
+
+  .login-panel {
+    min-height: 100svh;
+    padding: 32px 24px;
+    border-left: 0;
+  }
+
+  .login-field input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
