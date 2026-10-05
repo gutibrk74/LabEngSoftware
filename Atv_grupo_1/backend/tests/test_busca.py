@@ -153,7 +153,9 @@ def test_quadra_inativa_nunca_aparece(
 
 
 @pytest.mark.parametrize(
-    "data", ["2026-10-09", "2026-11-10", "10/12/2026"], ids=str
+    "data",
+    ["2026-10-09", "2026-11-10", "10/12/2026"],
+    ids=["ontem", "hoje+31", "formato-errado"],
 )
 def test_data_invalida(
     client: TestClient, quadras: dict[str, Any], data: str

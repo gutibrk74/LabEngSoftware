@@ -35,28 +35,39 @@ def test_cadastra_quadra_com_valores_padrao(
 
 
 @pytest.mark.parametrize(
-    ("campos", "motivo"),
+    "campos",
     [
-        ({"tipo_esporte": "golfe"}, "esporte inválido"),
-        ({"preco_hora": 0}, "preço zero"),
-        ({"preco_hora": 10.123}, "mais de 2 casas decimais"),
-        ({"comprimento_m": -1}, "dimensão negativa"),
-        ({"nome": "  ab  "}, "nome curto depois de tirar espaços"),
-        ({"hora_fechamento": 25}, "hora fora de 0-24"),
-        ({"hora_abertura": -1}, "hora negativa"),
+        {"tipo_esporte": "golfe"},
+        {"preco_hora": 0},
+        {"preco_hora": 10.123},
+        {"comprimento_m": -1},
+        {"nome": "  ab  "},
+        {"hora_fechamento": 25},
+        {"hora_abertura": -1},
+    ],
+    ids=[
+        "esporte-invalido",
+        "preco-zero",
+        "tres-casas-decimais",
+        "dimensao-negativa",
+        "nome-curto-sem-espacos",
+        "hora-acima-de-24",
+        "hora-negativa",
     ],
 )
 def test_cadastro_recusa_dados_invalidos(
-    client: TestClient, admin: Cabecalho, campos: dict[str, Any], motivo: str
+    client: TestClient, admin: Cabecalho, campos: dict[str, Any]
 ) -> None:
     resposta = client.post(
         "/admin/quadras", json=dados_quadra(**campos), headers=admin
     )
 
-    assert resposta.status_code == 422, motivo
+    assert resposta.status_code == 422
 
 
-@pytest.mark.parametrize(("abertura", "fechamento"), [(22, 8), (10, 10)])
+@pytest.mark.parametrize(
+    ("abertura", "fechamento"), [(22, 8), (10, 10)], ids=["22h-8h", "10h-10h"]
+)
 def test_cadastro_recusa_horario_invertido(
     client: TestClient, admin: Cabecalho, abertura: int, fechamento: int
 ) -> None:
