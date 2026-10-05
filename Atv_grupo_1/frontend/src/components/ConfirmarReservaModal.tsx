@@ -17,12 +17,13 @@ type ConfirmarReservaModalProps = {
 
 export default function ConfirmarReservaModal({
   quadra,
-  data,
+  data: dataEscolhida,
   horario,
   valor,
   onFechar,
 }: ConfirmarReservaModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [data] = useState(dataEscolhida);
   const [enviando, setEnviando] = useState(false);
   const [reserva, setReserva] = useState<Reserva | null>(null);
   const confirmada = reserva !== null;
