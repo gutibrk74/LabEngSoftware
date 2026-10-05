@@ -3,7 +3,7 @@ from app.core.exceptions import (
     DadosInvalidosError,
     NaoEncontradoError,
 )
-from app.models.quadra import Quadra
+from app.models.quadra import Quadra, TipoEsporte
 from app.repositories.quadra_repository import QuadraRepository
 from app.schemas.quadra import QuadraBase, QuadraCreate, QuadraUpdate
 
@@ -12,8 +12,14 @@ class QuadraService:
     def __init__(self, repositorio: QuadraRepository) -> None:
         self._repositorio = repositorio
 
-    def listar(self, incluir_inativas: bool = False) -> list[Quadra]:
-        return self._repositorio.listar(apenas_ativas=not incluir_inativas)
+    def listar(
+        self,
+        incluir_inativas: bool = False,
+        esporte: TipoEsporte | None = None,
+    ) -> list[Quadra]:
+        return self._repositorio.listar(
+            apenas_ativas=not incluir_inativas, esporte=esporte
+        )
 
     def obter(self, quadra_id: int, incluir_inativas: bool = False) -> Quadra:
         quadra = self._repositorio.buscar_por_id(quadra_id)

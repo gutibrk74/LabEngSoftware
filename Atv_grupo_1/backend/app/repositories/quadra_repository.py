@@ -10,11 +10,16 @@ class QuadraRepository:
     def __init__(self, db: Session) -> None:
         self._db = db
 
-    def listar(self, apenas_ativas: bool) -> list[Quadra]:
+    def listar(
+        self, apenas_ativas: bool, esporte: str | None = None
+    ) -> list[Quadra]:
         consulta = select(Quadra).order_by(Quadra.nome)
 
         if apenas_ativas:
             consulta = consulta.where(Quadra.ativa.is_(True))
+
+        if esporte is not None:
+            consulta = consulta.where(Quadra.tipo_esporte == esporte)
 
         return list(self._db.scalars(consulta))
 

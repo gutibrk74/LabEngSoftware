@@ -45,3 +45,72 @@
   outline: 2px solid #d1131a;
   outline-offset: 2px;
 }
+
+/* Busca de quadras */
+
+.busca-quadras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.busca-campo {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.busca-campo label {
+  color: #8a8a93;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.busca-campo select,
+.busca-campo input {
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid #2c2c31;
+  border-radius: 10px;
+  background: #18181b;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+}
+
+.busca-campo select:focus-visible,
+.busca-campo input:focus-visible,
+.busca-limpar:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 1px;
+}
+
+.busca-limpar {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid #2c2c31;
+  border-radius: 10px;
+  background: transparent;
+  color: #e4e4e7;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.busca-limpar:hover {
+  border-color: #4a4a52;
+}
+
+.busca-resumo {
+  margin: 0 0 16px;
+  color: #b6b6bd;
+  font-size: 14px;
+}

@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, status
 
 from app.api.deps import AdministradorAtual, QuadraServiceDep, ReservaServiceDep
-from app.models.quadra import Quadra
+from app.models.quadra import Quadra, TipoEsporte
 from app.schemas.quadra import QuadraCreate, QuadraResponse, QuadraUpdate
 from app.schemas.reserva import GradeHorariosResponse
 
@@ -15,8 +15,13 @@ admin_router = APIRouter(prefix="/admin/quadras", tags=["Quadras (Admin)"])
 
 
 @router.get("", response_model=list[QuadraResponse])
-def listar_quadras(service: QuadraServiceDep) -> list[Quadra]:
-    return service.listar()
+def listar_quadras(
+    service: ReservaServiceDep,
+    esporte: TipoEsporte | None = None,
+    data: date | None = None,
+) -> list[Quadra]:
+    """Busca: filtra por esporte e, com data, só quadras com horário livre."""
+    return service.buscar_quadras(esporte, data)
 
 
 @router.get("/{quadra_id}", response_model=QuadraResponse)
