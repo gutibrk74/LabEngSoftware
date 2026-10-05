@@ -155,8 +155,19 @@ npm run dev
 
 Abra **http://localhost:5173**.
 
-> O frontend procura a API em `http://127.0.0.1:8000`. Para usar outro endereço, crie o arquivo
-> `Atv_grupo_1/frontend/.env.local` com `VITE_API_URL=http://endereco-da-api:porta` e reinicie o `npm run dev`.
+> O frontend chama a API pelo próprio endereço (`/api/...`) e o Vite repassa os pedidos para
+> `http://127.0.0.1:8000`. Se a API estiver em outra porta, inicie o frontend com
+> `API_PROXY_TARGET=http://127.0.0.1:8001 npm run dev` (no PowerShell:
+> `$env:API_PROXY_TARGET="http://127.0.0.1:8001"; npm run dev`).
+
+### Usando o GitHub Codespaces
+
+1. Rode a API (passo 4.4) e o frontend (`npm run dev`) em terminais do codespace.
+2. Na aba **Ports** (Portas) do VS Code, abra o endereço da porta **5173**
+   (algo como `https://<nome-do-codespace>-5173.app.github.dev`).
+
+Só a porta 5173 precisa ser acessada pelo navegador: as chamadas à API passam pelo Vite,
+dentro do próprio codespace, então a porta 8000 pode continuar privada.
 
 ---
 
@@ -215,6 +226,7 @@ O resultado da última execução está em [`TestExecutionReport.md`](TestExecut
 | `password authentication failed for user "postgres"` | senha errada no `.env` | corrija `DB_PASSWORD` |
 | `database "reserva_quadras" does not exist` | banco não criado | refaça o passo 3 |
 | `relation "quadras" does not exist` (ou outra tabela) | migrações não aplicadas | `alembic upgrade head` |
-| `NetworkError` / `Failed to fetch` na tela | a API não está rodando ou está em outro endereço | confira o passo 4.4 e o `VITE_API_URL` |
-| `address already in use` na porta 8000 ou 5173 | já existe outro processo usando a porta | feche o outro terminal ou use `uvicorn app.main:app --reload --port 8001` (e ajuste o `VITE_API_URL`) |
+| `NetworkError` / `Failed to fetch` na tela | a API não está rodando ou está em outra porta | confira o passo 4.4; se a API estiver em outra porta, use `API_PROXY_TARGET` (passo 5) |
+| `Blocked request. This host is not allowed` | o frontend foi aberto por um endereço que o Vite não conhece | abra por `http://localhost:5173` ou pelo endereço `.app.github.dev` do Codespaces |
+| `address already in use` na porta 8000 ou 5173 | já existe outro processo usando a porta | feche o outro terminal ou use `uvicorn app.main:app --reload --port 8001` (e `API_PROXY_TARGET`, passo 5) |
 | `npm` reclama da versão do Node | Node.js antigo | instale o Node 20.19+ ou 22.12+ |
