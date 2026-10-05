@@ -80,12 +80,16 @@ export async function fetchAutenticado(
   caminho: string,
   opcoes: OpcoesRequisicao = {},
 ): Promise<Response> {
+  const autenticacao = cabecalhoAutenticacao();
   const resposta = await fetch(`${API_URL}${caminho}`, {
     ...opcoes,
-    headers: { ...opcoes.headers, ...cabecalhoAutenticacao() },
+    headers: { ...opcoes.headers, ...autenticacao },
   });
 
-  if (resposta.status === 401) {
+  if (
+    resposta.status === 401 &&
+    autenticacao.Authorization === cabecalhoAutenticacao().Authorization
+  ) {
     encerrarSessaoExpirada();
   }
 
