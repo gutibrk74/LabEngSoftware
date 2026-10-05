@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/modal.css";
+import { ErroApi } from "../services/api";
 import type { Quadra } from "../services/quadras";
 import { criarReserva } from "../services/reservas";
 import type { Reserva } from "../services/reservas";
@@ -26,6 +27,9 @@ export default function ConfirmarReservaModal({
   const [reserva, setReserva] = useState<Reserva | null>(null);
   const confirmada = reserva !== null;
   const [erro, setErro] = useState("");
+  // Erros de regra (4xx: horário ocupado, preço mudou...) não se resolvem
+  // tentando de novo; falhas de rede ou do servidor (5xx) podem.
+  const [erroDefinitivo, setErroDefinitivo] = useState(false);
 
   // Enquanto a reserva está sendo gravada a janela não pode fechar: a grade
   // seria recarregada antes da gravação e mostraria o horário como livre.
@@ -48,6 +52,7 @@ export default function ConfirmarReservaModal({
 
   async function confirmar() {
     setErro("");
+    setErroDefinitivo(false);
     setEnviando(true);
     enviandoRef.current = true;
 
@@ -61,10 +66,14 @@ export default function ConfirmarReservaModal({
         }),
       );
     } catch (error) {
+      const definitivo =
+        error instanceof ErroApi && error.status >= 400 && error.status < 500;
+
+      setErroDefinitivo(definitivo);
       setErro(
-        error instanceof Error
+        error instanceof ErroApi
           ? error.message
-          : "Não foi possível concluir a reserva.",
+          : "Não foi possível conectar ao servidor. Tente novamente.",
       );
     } finally {
       enviandoRef.current = false;
@@ -170,7 +179,7 @@ export default function ConfirmarReservaModal({
                 className="botao botao--primario"
                 type="button"
                 onClick={confirmar}
-                disabled={enviando || erro !== ""}
+                disabled={enviando || erroDefinitivo}
               >
                 {enviando ? "Confirmando..." : "Confirmar reserva"}
               </button>
