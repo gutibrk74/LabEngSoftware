@@ -12,7 +12,7 @@ erDiagram
         boolean ativo
         datetime criado_em
     }
-    
+
     QUADRA {
         int id PK
         string nome UK
@@ -21,6 +21,8 @@ erDiagram
         decimal comprimento_m
         decimal largura_m
         decimal preco_hora
+        smallint hora_abertura
+        smallint hora_fechamento
         boolean coberta
         boolean iluminacao
         boolean replay
@@ -28,16 +30,15 @@ erDiagram
         boolean ativa
         datetime criado_em
     }
-    
+
     RESERVA {
         int id PK
         int usuario_id FK
         int quadra_id FK
-        datetime data_hora_inicio
-        datetime data_hora_fim
+        date data
+        smallint horario
+        decimal valor
         string status
-        decimal valor_total
-        string codigo_reserva
         datetime criado_em
     }
 
