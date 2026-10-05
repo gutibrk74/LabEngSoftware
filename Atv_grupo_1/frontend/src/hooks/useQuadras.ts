@@ -8,10 +8,20 @@ type Resultado = {
   erro: string;
 };
 
+function montarChave(
+  incluirInativas: boolean,
+  esporte: string | undefined,
+  data: string | undefined,
+  versao: number,
+): string {
+  return [incluirInativas, esporte ?? "", data ?? "", versao].join("|");
+}
+
 // incluirInativas=true usa a rota de admin (exige perfil administrador).
 // Os filtros (esporte e data) valem para a lista pública.
-// Enquanto o resultado guardado não for dos filtros atuais, está carregando;
-// a lista anterior continua na tela até a nova chegar.
+// Enquanto o resultado guardado não for da busca atual (filtros + versão do
+// recarregar), está carregando; a lista anterior continua na tela até a
+// nova chegar.
 export function useQuadras(
   incluirInativas: boolean,
   filtros: FiltrosQuadras = {},
@@ -22,11 +32,11 @@ export function useQuadras(
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [versao, setVersao] = useState(0);
 
-  const chave = `${incluirInativas}|${esporte ?? ""}|${data ?? ""}`;
+  const chave = montarChave(incluirInativas, esporte, data, versao);
 
   useEffect(() => {
     let ativo = true;
-    const chaveBusca = `${incluirInativas}|${esporte ?? ""}|${data ?? ""}`;
+    const chaveBusca = montarChave(incluirInativas, esporte, data, versao);
     const busca = incluirInativas
       ? listarQuadrasAdmin()
       : listarQuadras({ esporte, data });
