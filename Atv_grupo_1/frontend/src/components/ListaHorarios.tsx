@@ -43,15 +43,18 @@ export default function ListaHorarios({
           : encerrado
             ? "encerrado"
             : "reservado";
+        const inicio = formatarHora(horario);
+        const fim = formatarHora(horario + 1);
 
         return (
           <li key={horario} className="horario-linha">
-            <span className="horario-hora">{formatarHora(horario)}</span>
+            <span className="horario-hora">{inicio}</span>
 
             {situacao === "livre" ? (
               <button
                 type="button"
                 className="horario-slot horario-slot--livre"
+                aria-label={`Reservar das ${inicio} às ${fim}`}
                 onClick={() => onReservar(horario, valor)}
               >
                 + Disponível — clique para reservar
