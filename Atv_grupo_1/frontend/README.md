@@ -36,8 +36,12 @@ O passo a passo completo (incluindo banco e API) está em
 
 ## Configuração
 
-Por padrão o frontend usa a API em `http://127.0.0.1:8000`. Para mudar, crie `.env.local` com:
+O frontend chama a API em `/api/...` no próprio endereço, e o Vite repassa para
+`http://127.0.0.1:8000` (configurado em `vite.config.ts`, no `npm run dev` e no
+`npm run preview`). Isso evita problemas de CORS e permite usar o GitHub Codespaces
+abrindo só a porta 5173.
 
-```bash
-VITE_API_URL=http://endereco-da-api:porta
-```
+| Variável | Para quê | Exemplo |
+| --- | --- | --- |
+| `API_PROXY_TARGET` | muda o destino do proxy (API em outra porta ou máquina) | `API_PROXY_TARGET=http://127.0.0.1:8001 npm run dev` |
+| `VITE_API_URL` | ignora o proxy e chama a API direto nesse endereço (em `.env.local`) | `VITE_API_URL=https://api.exemplo.com` |

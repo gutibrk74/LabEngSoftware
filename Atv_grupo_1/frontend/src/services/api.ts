@@ -1,6 +1,8 @@
 import { encerrarSessaoExpirada, obterToken } from "./sessao";
 
-export const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+// Por padrão usa o proxy do Vite ("/api" -> backend). VITE_API_URL permite
+// apontar direto para outro endereço.
+export const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 type CadastroPayload = {
   nome: string;
