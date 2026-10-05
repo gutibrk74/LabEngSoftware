@@ -134,48 +134,48 @@ A coluna "Observação" indica o arquivo e o teste automatizado correspondentes 
 
 | ID | Cenário / Casos de Teste | Status | Observação / Defeito | Usuario | Data |
 | --- | :--- | :---: | :--- | :----- | :----- |
-| CT-01 | API no ar e testes usando banco próprio | ✅ | `test_saude.py` | @mariana-lins | 04/10/2026 |
-| CT-02 | Cadastro normaliza e-mail (minúsculas), CPF e telefone (só dígitos) e cria perfil atleta | ✅ | `test_auth.py::test_cadastro_normaliza_email_cpf_e_telefone` | @mariana-lins | 04/10/2026 |
-| CT-03 | Senha guardada com hash argon2, nunca em texto puro | ✅ | `test_auth.py::test_cadastro_guarda_senha_com_hash` | @mariana-lins | 04/10/2026 |
-| CT-04 | Cadastro recusa e-mail repetido (sem diferenciar maiúsculas) e CPF repetido — 409 | ✅ | `test_auth.py::test_cadastro_recusa_email_repetido...`, `..._cpf_repetido` | @mariana-lins | 04/10/2026 |
-| CT-05 | Cadastro recusa CPF, telefone, senha curta e senhas diferentes — 422 | ✅ | `test_auth.py::test_cadastro_recusa_*` (4 testes) | @mariana-lins | 04/10/2026 |
-| CT-06 | Login devolve token JWT e dados do usuário | ✅ | `test_auth.py::test_login_devolve_token_e_dados_do_usuario` | @mariana-lins | 04/10/2026 |
-| CT-07 | Login recusa senha errada e e-mail inexistente com a mesma mensagem — 401 | ✅ | `test_auth.py::test_login_recusa_senha_errada_e_email_inexistente` | @mariana-lins | 04/10/2026 |
-| CT-08 | Login recusa usuário inativo — 403 | ✅ | `test_auth.py::test_login_recusa_usuario_inativo` | @mariana-lins | 04/10/2026 |
-| CT-09 | `/auth/me` devolve o usuário logado | ✅ | `test_auth.py::test_me_devolve_o_usuario_logado` | @mariana-lins | 04/10/2026 |
-| CT-10 | Token ausente, inválido, expirado ou assinado com outra chave é recusado — 401 | ✅ | `test_auth.py::test_me_*` (4 testes) | @mariana-lins | 04/10/2026 |
-| CT-11 | Token de usuário inativado deixa de valer | ✅ | `test_auth.py::test_token_de_usuario_inativado_deixa_de_valer` | @mariana-lins | 04/10/2026 |
-| CT-12 | Rotas de admin: visitante 401, atleta 403, administrador 200 | ✅ | `test_auth.py::test_rota_de_admin_recusa_atleta_e_aceita_administrador` | @mariana-lins | 04/10/2026 |
-| CT-13 | Script `promover_admin` dá acesso de admin sem novo login; e-mail inexistente é informado | ✅ | `test_auth.py::test_promover_admin_*` (2 testes) | @mariana-lins | 04/10/2026 |
-| CT-14 | Cadastro de quadra com valores padrão (ativa, 8h–22h, sem comodidades) e espaços removidos | ✅ | `test_quadras.py::test_cadastra_quadra_com_valores_padrao` | @mariana-lins | 04/10/2026 |
-| CT-15 | Cadastro de quadra recusa esporte inválido, preço zero, 3 casas decimais, dimensão negativa, nome curto e hora fora de 0–24 — 422 | ✅ | `test_quadras.py::test_cadastro_recusa_dados_invalidos` (7 casos) | @mariana-lins | 04/10/2026 |
-| CT-16 | Horário de funcionamento invertido ou de duração zero é recusado (API e banco) | ✅ | `test_quadras.py::test_cadastro_recusa_horario_invertido` (2), `test_banco_recusa_horario_invertido` | @mariana-lins | 04/10/2026 |
-| CT-17 | Nome de quadra único sem diferenciar maiúsculas, inclusive direto no banco — 409 | ✅ | `test_quadras.py::test_nome_repetido_*`, `test_banco_garante_nome_unico_*` | @mariana-lins | 04/10/2026 |
-| CT-18 | Lista pública só com quadras ativas, em ordem de nome; admin vê todas | ✅ | `test_quadras.py::test_lista_publica_mostra_so_ativas_em_ordem_de_nome` | @mariana-lins | 04/10/2026 |
-| CT-19 | Detalhe público esconde quadra inativa e inexistente — 404 | ✅ | `test_quadras.py::test_detalhe_publico_esconde_quadra_inativa` | @mariana-lins | 04/10/2026 |
-| CT-20 | Edição de quadra (preço, comodidades, horário); exige o campo `ativa`; recusa nome repetido e quadra inexistente | ✅ | `test_quadras.py::test_edita_quadra`, `test_edicao_*` (3 testes) | @mariana-lins | 04/10/2026 |
-| CT-21 | Inativar (DELETE) tira a quadra da lista pública sem apagar do banco; reativar devolve | ✅ | `test_quadras.py::test_inativar_e_reativar`, `test_inativar_nao_apaga_do_banco` | @mariana-lins | 04/10/2026 |
-| CT-22 | Atleta não pode cadastrar, editar nem inativar quadras — 403; visitante — 401 | ✅ | `test_quadras.py::test_atleta_nao_pode_alterar_quadras` | @mariana-lins | 04/10/2026 |
-| CT-23 | Busca sem filtros e por esporte (inclusive esporte sem quadras e esporte inválido) | ✅ | `test_busca.py` (4 testes) | @mariana-lins | 04/10/2026 |
-| CT-24 | Busca por data esconde quadra sem horário livre; reserva cancelada libera a quadra | ✅ | `test_busca.py::test_com_data_*`, `test_reserva_cancelada_libera_a_quadra_na_busca` | @mariana-lins | 04/10/2026 |
-| CT-25 | Busca combina esporte e data; esconde quadra que já fechou hoje; nunca mostra inativa | ✅ | `test_busca.py` (3 testes) | @mariana-lins | 04/10/2026 |
-| CT-26 | Busca recusa data passada, mais de 30 dias e formato errado; aceita o limite de 30 dias | ✅ | `test_busca.py::test_data_invalida` (3), `test_limite_de_30_dias_e_aceito` | @mariana-lins | 04/10/2026 |
-| CT-27 | Grade lista os horários de funcionamento com o valor, sem expor quem reservou | ✅ | `test_reservas.py::test_grade_lista_os_horarios_de_funcionamento` | @mariana-lins | 04/10/2026 |
-| CT-28 | Grade marca reservas pendentes e pagas como ocupadas e libera as canceladas | ✅ | `test_reservas.py::test_grade_marca_*`, `test_grade_libera_*` | @mariana-lins | 04/10/2026 |
-| CT-29 | Grade de hoje bloqueia horários que já começaram; respeita o horário de cada quadra | ✅ | `test_reservas.py::test_grade_de_hoje_*`, `test_grade_respeita_*` | @mariana-lins | 04/10/2026 |
-| CT-30 | Grade valida a data (ontem e hoje+31 recusados, hoje+30 aceito) e quadra inativa/inexistente | ✅ | `test_reservas.py::test_grade_valida_a_data` (3), `test_grade_de_quadra_inativa_ou_inexistente` | @mariana-lins | 04/10/2026 |
-| CT-31 | Reserva exige login — 401 | ✅ | `test_reservas.py::test_reserva_exige_login` | @mariana-lins | 04/10/2026 |
-| CT-32 | Reserva criada como pendente, com o preço, e o horário passa a constar como ocupado | ✅ | `test_reservas.py::test_reserva_criada_como_pendente_com_o_preco` | @mariana-lins | 04/10/2026 |
-| CT-33 | Horário já reservado é recusado para outro atleta e para o mesmo atleta — 409 | ✅ | `test_reservas.py::test_horario_ocupado_responde_409` | @mariana-lins | 04/10/2026 |
-| CT-34 | Reserva recusa antes de abrir, na hora de fechar, hora 24, horário já iniciado, data passada e hoje+31; aceita a última hora e a próxima hora de hoje | ✅ | `test_reservas.py::test_reserva_recusa_horarios_invalidos` (6), `test_reserva_aceita_horarios_validos` (2) | @mariana-lins | 04/10/2026 |
-| CT-35 | Reserva de quadra inativa ou inexistente — 404 | ✅ | `test_reservas.py::test_reserva_de_quadra_inativa_ou_inexistente` | @mariana-lins | 04/10/2026 |
-| CT-36 | Reserva exige o valor visto na revisão e recusa preço desatualizado (409 com o preço novo, horário continua livre) | ✅ | `test_reservas.py::test_reserva_exige_o_valor_esperado`, `test_reserva_recusa_preco_desatualizado` | @mariana-lins | 04/10/2026 |
-| CT-37 | Reserva guarda o preço do momento (mudança posterior de preço não altera) | ✅ | `test_reservas.py::test_reserva_guarda_o_preco_do_momento` | @mariana-lins | 04/10/2026 |
-| CT-38 | Reserva cancelada libera o horário para outra pessoa | ✅ | `test_reservas.py::test_reserva_cancelada_libera_o_horario` | @mariana-lins | 04/10/2026 |
-| CT-39 | Virada da meia-noite entre as validações não permite reservar uma data que acabou de passar | ✅ | `test_reservas.py::test_meia_noite_entre_as_validacoes_nao_aceita_data_passada` | @mariana-lins | 04/10/2026 |
-| CT-40 | Banco recusa reserva com hora 24, status inválido, valor zero e quadra inexistente | ✅ | `test_reservas.py::test_banco_recusa_reserva_invalida` (4 casos) | @mariana-lins | 04/10/2026 |
-| CT-41 | **10 pedidos simultâneos para o mesmo horário (5 rodadas): 1 aprovado e 9 recusados em cada, 1 só reserva no banco** | ✅ | `test_concorrencia.py::test_dez_atletas_no_mesmo_horario_so_um_consegue` (5 rodadas) — 50 tentativas, 5 aprovadas, 45 barradas | @mariana-lins | 04/10/2026 |
-| CT-42 | Controle: 10 pedidos simultâneos para horários diferentes são todos aceitos | ✅ | `test_concorrencia.py::test_controle_*` | @mariana-lins | 04/10/2026 |
-| CT-43 | Horário cancelado volta a ser disputado: 10 pedidos simultâneos, 1 aceito | ✅ | `test_concorrencia.py::test_horario_cancelado_*` | @mariana-lins | 04/10/2026 |
-| CT-44 | 10 gravações simultâneas direto no banco: só 1 aceita | ✅ | `test_concorrencia.py::test_banco_barra_gravacoes_simultaneas_sem_passar_pela_api` | @mariana-lins | 04/10/2026 |
-| CT-45 | 3 cadastros simultâneos de quadra com o mesmo nome: 1 aceito, 2 recusados | ✅ | `test_concorrencia.py::test_cadastro_simultaneo_de_quadras_com_mesmo_nome` | @mariana-lins | 04/10/2026 |
+| CT-01 | API no ar e testes usando banco próprio | ✅ | `test_saude.py` | @gutibrk74 | 04/10/2026 |
+| CT-02 | Cadastro normaliza e-mail (minúsculas), CPF e telefone (só dígitos) e cria perfil atleta | ✅ | `test_auth.py::test_cadastro_normaliza_email_cpf_e_telefone` | @gutibrk74 | 04/10/2026 |
+| CT-03 | Senha guardada com hash argon2, nunca em texto puro | ✅ | `test_auth.py::test_cadastro_guarda_senha_com_hash` | @gutibrk74 | 04/10/2026 |
+| CT-04 | Cadastro recusa e-mail repetido (sem diferenciar maiúsculas) e CPF repetido — 409 | ✅ | `test_auth.py::test_cadastro_recusa_email_repetido...`, `..._cpf_repetido` | @gutibrk74 | 04/10/2026 |
+| CT-05 | Cadastro recusa CPF, telefone, senha curta e senhas diferentes — 422 | ✅ | `test_auth.py::test_cadastro_recusa_*` (4 testes) | @gutibrk74 | 04/10/2026 |
+| CT-06 | Login devolve token JWT e dados do usuário | ✅ | `test_auth.py::test_login_devolve_token_e_dados_do_usuario` | @gutibrk74 | 04/10/2026 |
+| CT-07 | Login recusa senha errada e e-mail inexistente com a mesma mensagem — 401 | ✅ | `test_auth.py::test_login_recusa_senha_errada_e_email_inexistente` | @gutibrk74 | 04/10/2026 |
+| CT-08 | Login recusa usuário inativo — 403 | ✅ | `test_auth.py::test_login_recusa_usuario_inativo` | @gutibrk74 | 04/10/2026 |
+| CT-09 | `/auth/me` devolve o usuário logado | ✅ | `test_auth.py::test_me_devolve_o_usuario_logado` | @gutibrk74 | 04/10/2026 |
+| CT-10 | Token ausente, inválido, expirado ou assinado com outra chave é recusado — 401 | ✅ | `test_auth.py::test_me_*` (4 testes) | @gutibrk74 | 04/10/2026 |
+| CT-11 | Token de usuário inativado deixa de valer | ✅ | `test_auth.py::test_token_de_usuario_inativado_deixa_de_valer` | @gutibrk74 | 04/10/2026 |
+| CT-12 | Rotas de admin: visitante 401, atleta 403, administrador 200 | ✅ | `test_auth.py::test_rota_de_admin_recusa_atleta_e_aceita_administrador` | @gutibrk74 | 04/10/2026 |
+| CT-13 | Script `promover_admin` dá acesso de admin sem novo login; e-mail inexistente é informado | ✅ | `test_auth.py::test_promover_admin_*` (2 testes) | @gutibrk74 | 04/10/2026 |
+| CT-14 | Cadastro de quadra com valores padrão (ativa, 8h–22h, sem comodidades) e espaços removidos | ✅ | `test_quadras.py::test_cadastra_quadra_com_valores_padrao` | @gutibrk74 | 04/10/2026 |
+| CT-15 | Cadastro de quadra recusa esporte inválido, preço zero, 3 casas decimais, dimensão negativa, nome curto e hora fora de 0–24 — 422 | ✅ | `test_quadras.py::test_cadastro_recusa_dados_invalidos` (7 casos) | @gutibrk74 | 04/10/2026 |
+| CT-16 | Horário de funcionamento invertido ou de duração zero é recusado (API e banco) | ✅ | `test_quadras.py::test_cadastro_recusa_horario_invertido` (2), `test_banco_recusa_horario_invertido` | @gutibrk74 | 04/10/2026 |
+| CT-17 | Nome de quadra único sem diferenciar maiúsculas, inclusive direto no banco — 409 | ✅ | `test_quadras.py::test_nome_repetido_*`, `test_banco_garante_nome_unico_*` | @gutibrk74 | 04/10/2026 |
+| CT-18 | Lista pública só com quadras ativas, em ordem de nome; admin vê todas | ✅ | `test_quadras.py::test_lista_publica_mostra_so_ativas_em_ordem_de_nome` | @gutibrk74 | 04/10/2026 |
+| CT-19 | Detalhe público esconde quadra inativa e inexistente — 404 | ✅ | `test_quadras.py::test_detalhe_publico_esconde_quadra_inativa` | @gutibrk74 | 04/10/2026 |
+| CT-20 | Edição de quadra (preço, comodidades, horário); exige o campo `ativa`; recusa nome repetido e quadra inexistente | ✅ | `test_quadras.py::test_edita_quadra`, `test_edicao_*` (3 testes) | @gutibrk74 | 04/10/2026 |
+| CT-21 | Inativar (DELETE) tira a quadra da lista pública sem apagar do banco; reativar devolve | ✅ | `test_quadras.py::test_inativar_e_reativar`, `test_inativar_nao_apaga_do_banco` | @gutibrk74 | 04/10/2026 |
+| CT-22 | Atleta não pode cadastrar, editar nem inativar quadras — 403; visitante — 401 | ✅ | `test_quadras.py::test_atleta_nao_pode_alterar_quadras` | @gutibrk74 | 04/10/2026 |
+| CT-23 | Busca sem filtros e por esporte (inclusive esporte sem quadras e esporte inválido) | ✅ | `test_busca.py` (4 testes) | @gutibrk74 | 04/10/2026 |
+| CT-24 | Busca por data esconde quadra sem horário livre; reserva cancelada libera a quadra | ✅ | `test_busca.py::test_com_data_*`, `test_reserva_cancelada_libera_a_quadra_na_busca` | @gutibrk74 | 04/10/2026 |
+| CT-25 | Busca combina esporte e data; esconde quadra que já fechou hoje; nunca mostra inativa | ✅ | `test_busca.py` (3 testes) | @gutibrk74 | 04/10/2026 |
+| CT-26 | Busca recusa data passada, mais de 30 dias e formato errado; aceita o limite de 30 dias | ✅ | `test_busca.py::test_data_invalida` (3), `test_limite_de_30_dias_e_aceito` | @gutibrk74 | 04/10/2026 |
+| CT-27 | Grade lista os horários de funcionamento com o valor, sem expor quem reservou | ✅ | `test_reservas.py::test_grade_lista_os_horarios_de_funcionamento` | @gutibrk74 | 04/10/2026 |
+| CT-28 | Grade marca reservas pendentes e pagas como ocupadas e libera as canceladas | ✅ | `test_reservas.py::test_grade_marca_*`, `test_grade_libera_*` | @gutibrk74 | 04/10/2026 |
+| CT-29 | Grade de hoje bloqueia horários que já começaram; respeita o horário de cada quadra | ✅ | `test_reservas.py::test_grade_de_hoje_*`, `test_grade_respeita_*` | @gutibrk74 | 04/10/2026 |
+| CT-30 | Grade valida a data (ontem e hoje+31 recusados, hoje+30 aceito) e quadra inativa/inexistente | ✅ | `test_reservas.py::test_grade_valida_a_data` (3), `test_grade_de_quadra_inativa_ou_inexistente` | @gutibrk74 | 04/10/2026 |
+| CT-31 | Reserva exige login — 401 | ✅ | `test_reservas.py::test_reserva_exige_login` | @gutibrk74 | 04/10/2026 |
+| CT-32 | Reserva criada como pendente, com o preço, e o horário passa a constar como ocupado | ✅ | `test_reservas.py::test_reserva_criada_como_pendente_com_o_preco` | @gutibrk74 | 04/10/2026 |
+| CT-33 | Horário já reservado é recusado para outro atleta e para o mesmo atleta — 409 | ✅ | `test_reservas.py::test_horario_ocupado_responde_409` | @gutibrk74 | 04/10/2026 |
+| CT-34 | Reserva recusa antes de abrir, na hora de fechar, hora 24, horário já iniciado, data passada e hoje+31; aceita a última hora e a próxima hora de hoje | ✅ | `test_reservas.py::test_reserva_recusa_horarios_invalidos` (6), `test_reserva_aceita_horarios_validos` (2) | @gutibrk74 | 04/10/2026 |
+| CT-35 | Reserva de quadra inativa ou inexistente — 404 | ✅ | `test_reservas.py::test_reserva_de_quadra_inativa_ou_inexistente` | @gutibrk74 | 04/10/2026 |
+| CT-36 | Reserva exige o valor visto na revisão e recusa preço desatualizado (409 com o preço novo, horário continua livre) | ✅ | `test_reservas.py::test_reserva_exige_o_valor_esperado`, `test_reserva_recusa_preco_desatualizado` | @gutibrk74 | 04/10/2026 |
+| CT-37 | Reserva guarda o preço do momento (mudança posterior de preço não altera) | ✅ | `test_reservas.py::test_reserva_guarda_o_preco_do_momento` | @gutibrk74 | 04/10/2026 |
+| CT-38 | Reserva cancelada libera o horário para outra pessoa | ✅ | `test_reservas.py::test_reserva_cancelada_libera_o_horario` | @gutibrk74 | 04/10/2026 |
+| CT-39 | Virada da meia-noite entre as validações não permite reservar uma data que acabou de passar | ✅ | `test_reservas.py::test_meia_noite_entre_as_validacoes_nao_aceita_data_passada` | @gutibrk74 | 04/10/2026 |
+| CT-40 | Banco recusa reserva com hora 24, status inválido, valor zero e quadra inexistente | ✅ | `test_reservas.py::test_banco_recusa_reserva_invalida` (4 casos) | @gutibrk74 | 04/10/2026 |
+| CT-41 | **10 pedidos simultâneos para o mesmo horário (5 rodadas): 1 aprovado e 9 recusados em cada, 1 só reserva no banco** | ✅ | `test_concorrencia.py::test_dez_atletas_no_mesmo_horario_so_um_consegue` (5 rodadas) — 50 tentativas, 5 aprovadas, 45 barradas | @gutibrk74 | 04/10/2026 |
+| CT-42 | Controle: 10 pedidos simultâneos para horários diferentes são todos aceitos | ✅ | `test_concorrencia.py::test_controle_*` | @gutibrk74 | 04/10/2026 |
+| CT-43 | Horário cancelado volta a ser disputado: 10 pedidos simultâneos, 1 aceito | ✅ | `test_concorrencia.py::test_horario_cancelado_*` | @gutibrk74 | 04/10/2026 |
+| CT-44 | 10 gravações simultâneas direto no banco: só 1 aceita | ✅ | `test_concorrencia.py::test_banco_barra_gravacoes_simultaneas_sem_passar_pela_api` | @gutibrk74 | 04/10/2026 |
+| CT-45 | 3 cadastros simultâneos de quadra com o mesmo nome: 1 aceito, 2 recusados | ✅ | `test_concorrencia.py::test_cadastro_simultaneo_de_quadras_com_mesmo_nome` | @gutibrk74 | 04/10/2026 |
