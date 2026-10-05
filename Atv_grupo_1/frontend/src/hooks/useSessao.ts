@@ -57,6 +57,51 @@ export function useSessao() {
     };
   }, []);
 
+  useEffect(() => {
+    let ativo = true;
+
+    function aoMudarStorage(event: StorageEvent) {
+      if (event.key !== null && event.key !== "access_token") {
+        return;
+      }
+
+      const token = obterToken();
+
+      if (!token) {
+        setUsuario(null);
+        setCarregando(false);
+        window.location.hash = "#/login";
+        return;
+      }
+
+      setCarregando(true);
+
+      buscarUsuarioAtual()
+        .then((dados) => {
+          if (ativo) {
+            setUsuario(dados);
+          }
+        })
+        .catch(() => {
+          if (ativo) {
+            setUsuario(null);
+          }
+        })
+        .finally(() => {
+          if (ativo) {
+            setCarregando(false);
+          }
+        });
+    }
+
+    window.addEventListener("storage", aoMudarStorage);
+
+    return () => {
+      ativo = false;
+      window.removeEventListener("storage", aoMudarStorage);
+    };
+  }, []);
+
   // Encerra a sessão quando o token vence, mesmo sem nenhuma chamada à API.
   // Refeito a cada login e cancelado no logout (quando usuario muda).
   useEffect(() => {
