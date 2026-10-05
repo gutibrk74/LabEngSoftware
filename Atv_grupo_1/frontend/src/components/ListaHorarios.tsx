@@ -1,5 +1,5 @@
 import type { GradeHorarios } from "../services/reservas";
-import { formatarHora, hojeIso } from "../utils/datas";
+import { formatarHora, hojeIso, horaAtual } from "../utils/datas";
 
 type ListaHorariosProps = {
   grade: GradeHorarios | null;
@@ -31,13 +31,13 @@ export default function ListaHorarios({
   }
 
   const ehHoje = grade.data === hojeIso();
-  const horaAtual = new Date().getHours();
+  const horaAgora = horaAtual();
 
   return (
     <ul className="lista-horarios">
       {grade.horarios.map(({ horario, disponivel, valor }) => {
         // A API só diz se está livre; aqui separamos o que já passou.
-        const encerrado = !disponivel && ehHoje && horario <= horaAtual;
+        const encerrado = !disponivel && ehHoje && horario <= horaAgora;
         const situacao = disponivel
           ? "livre"
           : encerrado

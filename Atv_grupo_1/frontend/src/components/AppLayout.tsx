@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import "../styles/layout.css";
 import type { Usuario } from "../services/api";
+import { FUSO_HORARIO } from "../utils/datas";
 
 type ItemMenu = {
   rota: string;
@@ -52,6 +53,7 @@ const MENU_ADMIN: ItemMenu[] = [
 ];
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: FUSO_HORARIO,
   weekday: "long",
   day: "2-digit",
   month: "long",
