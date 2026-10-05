@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import "../styles/layout.css";
+import { useRelogio } from "../hooks/useRelogio";
 import type { Usuario } from "../services/api";
 import { FUSO_HORARIO } from "../utils/datas";
 
@@ -76,6 +77,8 @@ export default function AppLayout({
 }: AppLayoutProps) {
   const isAdmin = usuario.perfil === "administrador";
   const menu = isAdmin ? MENU_ADMIN : MENU_ATLETA;
+  // Redesenha na virada da hora para a data do topo acompanhar o dia.
+  useRelogio();
 
   return (
     <div className="app-shell">

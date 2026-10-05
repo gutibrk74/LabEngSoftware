@@ -1,10 +1,13 @@
 import type { GradeHorarios } from "../services/reservas";
-import { formatarHora, hojeIso, horaAtual } from "../utils/datas";
+import { formatarHora } from "../utils/datas";
 
 type ListaHorariosProps = {
   grade: GradeHorarios | null;
   carregando: boolean;
   erro: string;
+  // Dia e hora atuais (São Paulo), vindos do useRelogio.
+  hoje: string;
+  hora: number;
   onReservar: (horario: number, valor: number) => void;
 };
 
@@ -12,6 +15,8 @@ export default function ListaHorarios({
   grade,
   carregando,
   erro,
+  hoje,
+  hora,
   onReservar,
 }: ListaHorariosProps) {
   if (carregando) {
@@ -30,18 +35,18 @@ export default function ListaHorarios({
     return <p className="horarios-aviso">Nenhum horário neste dia.</p>;
   }
 
-  const ehHoje = grade.data === hojeIso();
-  const horaAgora = horaAtual();
+  const ehHoje = grade.data === hoje;
 
   return (
     <ul className="lista-horarios">
       {grade.horarios.map(({ horario, disponivel, valor }) => {
-        // A API só diz se está livre; aqui separamos o que já passou.
-        const encerrado = !disponivel && ehHoje && horario <= horaAgora;
-        const situacao = disponivel
-          ? "livre"
-          : encerrado
-            ? "encerrado"
+        // Horário de hoje que já começou fica encerrado na hora, mesmo que a
+        // grade ainda não tenha sido buscada de novo.
+        const encerrado = ehHoje && horario <= hora;
+        const situacao = encerrado
+          ? "encerrado"
+          : disponivel
+            ? "livre"
             : "reservado";
         const inicio = formatarHora(horario);
         const fim = formatarHora(horario + 1);
