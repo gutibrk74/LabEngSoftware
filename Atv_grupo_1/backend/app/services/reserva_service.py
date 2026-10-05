@@ -25,9 +25,10 @@ class ReservaService:
 
     def montar_grade(self, quadra_id: int, data: date) -> GradeHorariosResponse:
         quadra = self._quadra_service.obter(quadra_id)
-        self._validar_data(data)
-
+        # Uma única leitura do relógio para todas as regras deste pedido.
         momento = agora()
+        self._validar_data(data, momento)
+
         ocupados = self._repositorio.horarios_ocupados(quadra_id, data)
 
         horarios = [
@@ -46,12 +47,15 @@ class ReservaService:
 
     def reservar(self, usuario: Usuario, dados: ReservaCreate) -> Reserva:
         quadra = self._quadra_service.obter(dados.quadra_id)
-        self._validar_data(dados.data)
+        # Uma única leitura do relógio: se a meia-noite passar no meio do
+        # pedido, as duas validações ainda concordam sobre o "agora".
+        momento = agora()
+        self._validar_data(dados.data, momento)
 
         if not quadra.hora_abertura <= dados.horario < quadra.hora_fechamento:
             raise DadosInvalidosError("A quadra não funciona nesse horário.")
 
-        if self._ja_comecou(dados.data, dados.horario, agora()):
+        if self._ja_comecou(dados.data, dados.horario, momento):
             raise DadosInvalidosError("Esse horário já começou.")
 
         if dados.valor_esperado != quadra.preco_hora:
@@ -74,10 +78,12 @@ class ReservaService:
         return self._repositorio.adicionar(reserva)
 
     def _ja_comecou(self, data: date, hora: int, momento: datetime) -> bool:
-        return data == momento.date() and hora <= momento.hour
+        hoje = momento.date()
+        # Qualquer dia anterior a hoje já começou por inteiro.
+        return data < hoje or (data == hoje and hora <= momento.hour)
 
-    def _validar_data(self, data: date) -> None:
-        hoje = agora().date()
+    def _validar_data(self, data: date, momento: datetime) -> None:
+        hoje = momento.date()
 
         if data < hoje:
             raise DadosInvalidosError("Não é possível usar uma data passada.")
