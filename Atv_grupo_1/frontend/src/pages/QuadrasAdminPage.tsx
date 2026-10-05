@@ -22,7 +22,9 @@ export default function QuadrasAdminPage() {
   }
 
   function aoSalvar() {
-    fecharFormulario();
+    setFormulario((atual) =>
+      atual === formulario ? { aberto: false } : atual,
+    );
     recarregar();
   }
 
