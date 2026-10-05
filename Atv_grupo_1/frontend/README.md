@@ -1,75 +1,43 @@
-# React + TypeScript + Vite
+# Frontend — Reserva Gávea
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web do sistema, feita com **React 19 + TypeScript** e **Vite**.
 
-Currently, two official plugins are available:
+## Como rodar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Com a API rodando em `http://127.0.0.1:8000`:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+O passo a passo completo (incluindo banco e API) está em
+[`../documents/InstallationGuide.md`](../documents/InstallationGuide.md).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Comando | O que faz |
+| --- | --- |
+| `npm run dev` | servidor de desenvolvimento com recarga automática |
+| `npm run build` | checagem de tipos (`tsc`) e build de produção em `dist/` |
+| `npm run lint` | ESLint |
+| `npm run preview` | serve o build de produção localmente |
 
+## Organização
+
+| Pasta | Conteúdo |
+| --- | --- |
+| `src/pages` | telas (Início, Horários, Quadras, Login, Cadastro) |
+| `src/components` | componentes reutilizáveis (layout, cards, formulários, janelas) |
+| `src/hooks` | lógica de estado (sessão, quadras, grade de horários, relógio) |
+| `src/services` | chamadas à API, separadas das telas |
+| `src/utils` | formatação de datas, preços e dados dos esportes |
+| `src/styles` | CSS de cada área |
+
+## Configuração
+
+Por padrão o frontend usa a API em `http://127.0.0.1:8000`. Para mudar, crie `.env.local` com:
+
+```bash
+VITE_API_URL=http://endereco-da-api:porta
 ```
