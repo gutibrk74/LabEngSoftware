@@ -377,3 +377,95 @@ def test_banco_recusa_reserva_invalida(
 
         with pytest.raises(IntegrityError):
             db.commit()
+
+# ------------------------------------------------------- US06: minhas reservas
+
+
+def test_listar_minhas_reservas_filtra_por_atleta(
+    client: TestClient, atleta: Cabecalho, quadra: dict[str, Any]
+) -> None:
+    client.post("/reservas", json=pedido(quadra["id"], horario=18), headers=atleta)
+    client.post("/reservas", json=pedido(quadra["id"], horario=20), headers=atleta)
+
+    # Outro usuário cria uma reserva que não deve aparecer para o primeiro atleta
+    client.post(
+        "/auth/register",
+        json={
+            "nome": "Outro Atleta",
+            "email": "outro@teste.com",
+            "telefone": "12988887777",
+            "cpf": "99988877766",
+            "cidade": "Caçapava",
+            "senha": "senha1234",
+            "confirmar_senha": "senha1234",
+        },
+    )
+    login_outro = client.post(
+        "/auth/login", json={"email": "outro@teste.com", "senha": "senha1234"}
+    )
+    cabecalho_outro = {
+        "Authorization": f"Bearer {login_outro.json()['access_token']}"
+    }
+    client.post(
+        "/reservas", json=pedido(quadra["id"], horario=19), headers=cabecalho_outro
+    )
+
+    resposta = client.get("/reservas/minhas", headers=atleta)
+
+    assert resposta.status_code == 200
+    lista = resposta.json()
+    assert len(lista) == 2
+    assert {item["horario"] for item in lista} == {18, 20}
+    assert lista[0]["quadra_nome"] == quadra["nome"]
+    assert lista[0]["quadra_esporte"] == quadra["tipo_esporte"]
+
+
+def test_cancelar_reserva_libera_horario_na_grade(
+    client: TestClient, atleta: Cabecalho, quadra: dict[str, Any]
+) -> None:
+    criada = client.post(
+        "/reservas", json=pedido(quadra["id"], horario=19), headers=atleta
+    ).json()
+
+    resposta = client.patch(
+        f"/reservas/{criada['id']}/cancelar", headers=atleta
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["status"] == "cancelada"
+
+    grade = client.get(
+        f"/quadras/{quadra['id']}/horarios", params={"data": AMANHA_DEPOIS}
+    ).json()
+    slot_19 = next(h for h in grade["horarios"] if h["horario"] == 19)
+    assert slot_19["disponivel"] is True
+
+
+def test_cancelar_reserva_recusa_fora_do_prazo_ou_outro_usuario(
+    client: TestClient,
+    atleta: Cabecalho,
+    admin: Cabecalho,
+    quadra: dict[str, Any],
+    relogio: Relogio,
+) -> None:
+    # Reserva hoje às 19h (relógio padrão está em 15h30)
+    criada = client.post(
+        "/reservas",
+        json=pedido(quadra["id"], data="2026-10-10", horario=19),
+        headers=atleta,
+    ).json()
+
+    # Outro usuário tentando cancelar recebe 403
+    proibido = client.patch(
+        f"/reservas/{criada['id']}/cancelar", headers=admin
+    )
+    assert proibido.status_code == 403
+
+    # Avança o relógio para 17h30 (menos de 2h antes do jogo)
+    perto_do_jogo = datetime(2026, 10, 10, 17, 30, tzinfo=FUSO_HORARIO)
+    relogio(perto_do_jogo, perto_do_jogo, perto_do_jogo)
+
+    atrasado = client.patch(
+        f"/reservas/{criada['id']}/cancelar", headers=atleta
+    )
+    assert atrasado.status_code == 422
