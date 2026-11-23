@@ -1,16 +1,15 @@
-# Relatório de Execução de Testes — Reserva Gávea (Sprint 1)
+# Relatório de Execução de Testes — Reserva Gávea
 
 ## Resumo da execução
 
 | Item | Valor |
 | --- | --- |
-| Data da execução | 04/10/2026, 22h06 (horário de Brasília) |
-| Versão testada | branch `test/automacao-e-report`, commit `b21a9a9` |
-| Ambiente | Python 3.14.2, pytest 9.1.1, PostgreSQL 16.15 |
+| Última execução | 23/11/2026 |
+| Versão testada | branch `Develop` (após entregas US02 e US06) |
+| Ambiente | Python 3.12.16, pytest 9.1.1, PostgreSQL 15/16 (Docker Compose) |
 | Comando | `pytest -v` (na pasta `Atv_grupo_1/backend`) |
-| Resultado | **97 testes — 97 passaram, 0 falharam** |
-| Duração | 53,7 segundos |
-| Estabilidade | a suíte completa foi executada 4 vezes seguidas, sem nenhuma falha |
+| Resultado | **104 testes — 104 passaram, 0 falharam** |
+| Estabilidade | suíte executada localmente e em container Docker sem nenhuma falha |
 
 Os testes ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreSQL próprio (`reserva_quadras_test`), criado e migrado automaticamente. O banco de desenvolvimento nunca é usado.
 
@@ -18,9 +17,17 @@ Os testes ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreS
 
 ## Como executar
 
-Na pasta `Atv_grupo_1/backend`, com o ambiente virtual ativado e o PostgreSQL rodando:
+### Via Docker Compose
 
 ```bash
+cd Atv_grupo_1
+docker compose exec backend sh -c "pip install --no-cache-dir -r requirements-dev.txt && pytest"
+```
+
+### Localmente (com `.venv` ativada e PostgreSQL rodando)
+
+```bash
+cd Atv_grupo_1/backend
 pip install -r requirements-dev.txt
 pytest            # resumo
 pytest -v -s      # cada teste + o resultado das rodadas de concorrência
@@ -35,12 +42,12 @@ O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de b
 | Arquivo | História | Testes | O que é verificado |
 | --- | --- | :---: | --- |
 | `test_saude.py` | — | 2 | API no ar e uso do banco de testes |
-| `test_auth.py` | US01 Autenticação | 21 | cadastro, login, validação do token JWT e perfis |
+| `test_auth.py` | US01 Autenticação e US02 Perfil | 25 | cadastro, CPF ASCII, login, validação do token JWT, edição de perfil e troca de senha |
 | `test_quadras.py` | US08 Infraestrutura | 22 | CRUD de quadras, validações, nome único e permissões |
 | `test_busca.py` | US03 Busca | 13 | filtros por esporte e por data |
-| `test_reservas.py` | US04 Grade e US05 Reserva | 30 | grade de horários, regras da reserva, preço e restrições do banco |
+| `test_reservas.py` | US04 Grade, US05 Reserva e US06 Minhas Reservas | 33 | grade de horários, regras da reserva, listagem do atleta, cancelamento com antecedência e restrições do banco |
 | `test_concorrencia.py` | US05 Reserva | 9 | pedidos simultâneos para o mesmo horário |
-| **Total** | | **97** | |
+| **Total** | | **104** | |
 
 Os testes de horário usam um relógio fixo (sábado, 10/10/2026, 15h30 em São Paulo), para que o resultado não dependa do dia em que a suíte é executada.
 
@@ -85,46 +92,6 @@ A garantia não depende apenas de uma checagem no código (que dois pedidos simu
 | Horário com reserva **cancelada** disputado por 10 atletas ao mesmo tempo | 1 aceito, 9 recusados — o cancelamento libera o horário e a regra continua valendo |
 | 10 gravações simultâneas **direto no banco**, sem passar pela API nem pelas regras do serviço | só 1 foi gravada — a garantia está no banco, não só no código |
 | 3 cadastros simultâneos de quadra com o mesmo nome ("Arena", "ARENA", "arena") | 1 aceito, 2 recusados — nome único sem diferenciar maiúsculas |
-
-Saída da execução (`pytest -v -s tests/test_concorrencia.py`):
-
-```text
-[rodada 1] 10 pedidos simultâneos para 9h: 1 aprovado(s) (201), 9 recusado(s) (409)
-[rodada 2] 10 pedidos simultâneos para 10h: 1 aprovado(s) (201), 9 recusado(s) (409)
-[rodada 3] 10 pedidos simultâneos para 11h: 1 aprovado(s) (201), 9 recusado(s) (409)
-[rodada 4] 10 pedidos simultâneos para 12h: 1 aprovado(s) (201), 9 recusado(s) (409)
-[rodada 5] 10 pedidos simultâneos para 13h: 1 aprovado(s) (201), 9 recusado(s) (409)
-```
-
----
-
-## 📖 Como preencher esta tabela (Guia para Devs)
-Use esta tabela para registrar o resultado dos testes de cada funcionalidade. Preencha ou atualize as colunas conforme o padrão abaixo.
-
-### ID
-Código único do teste (ex: CT-01, CT-02). Não altere a ordem ou os IDs existentes.
-
-### Cenário / Casos de Teste:
-O que está sendo testado (ex: Validação de payload com valor zerado).
-
-### Status
-Estado atual da funcionalidade. Use apenas:
-
-- ✅ Passou (Funcionalidade OK)
-
-- ❌ Falhou (Apresentou bug/divergência)
-
-### Observação / Defeito:
-
-Se Passou: Coloque N/A ou um breve comentário de sucesso.
-
-Se Falhou: Descreva brevemente o comportamento errado observado ou cole o link/ID do card de bug (ex: BUG-102: Erro 500 no checkout).
-
-### Usuario
-Seu arroba ou nome de usuário (ex: @nome.sobrenome).
-
-### Data
-Data em que a validação foi executada (DD/MM/AAAA).
 
 ---
 
@@ -179,3 +146,8 @@ A coluna "Observação" indica o arquivo e o teste automatizado correspondentes 
 | CT-43 | Horário cancelado volta a ser disputado: 10 pedidos simultâneos, 1 aceito | ✅ | `test_concorrencia.py::test_horario_cancelado_*` | @gutibrk74 | 04/10/2026 |
 | CT-44 | 10 gravações simultâneas direto no banco: só 1 aceita | ✅ | `test_concorrencia.py::test_banco_barra_gravacoes_simultaneas_sem_passar_pela_api` | @gutibrk74 | 04/10/2026 |
 | CT-45 | 3 cadastros simultâneos de quadra com o mesmo nome: 1 aceito, 2 recusados | ✅ | `test_concorrencia.py::test_cadastro_simultaneo_de_quadras_com_mesmo_nome` | @gutibrk74 | 04/10/2026 |
+| CT-46 | Cadastro bloqueia CPF com dígitos Unicode equivalentes — 422 | ✅ | `test_auth.py::test_cadastro_recusa_cpf_com_digitos_unicode` | @gutibrk74 | 23/11/2026 |
+| CT-47 | Listagem `/reservas/minhas` retorna apenas reservas do atleta autenticado com dados da quadra | ✅ | `test_reservas.py::test_listar_minhas_reservas_filtra_por_atleta` | @gutibrk74 | 23/11/2026 |
+| CT-48 | Cancelamento `/reservas/{id}/cancelar` libera horário na grade e bloqueia cancelamento fora do prazo (< 2h) ou por outro usuário (403/422) | ✅ | `test_reservas.py::test_cancelar_reserva_*` (2 testes) | @gutibrk74 | 23/11/2026 |
+| CT-49 | Edição de perfil (`PATCH /auth/me`) atualiza nome, telefone e cidade e recusa telefone inválido — 422 | ✅ | `test_auth.py::test_atualizar_perfil_*` (2 testes) | @gutibrk74 | 23/11/2026 |
+| CT-50 | Alteração de senha (`PATCH /auth/me/senha`) valida senha atual e permite login com a nova senha | ✅ | `test_auth.py::test_alterar_senha_do_atleta` | @gutibrk74 | 23/11/2026 |
