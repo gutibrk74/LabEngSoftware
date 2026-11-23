@@ -145,5 +145,9 @@ export function useSessao() {
     window.location.hash = "#/login";
   }, []);
 
-  return { usuario, carregando, entrar, sair };
+  const atualizarUsuario = useCallback((dadosAtualizados: Usuario) => {
+    setUsuario(dadosAtualizados);
+  }, []);
+
+  return { usuario, carregando, entrar, sair, atualizarUsuario };
 }
