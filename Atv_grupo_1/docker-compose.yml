@@ -4,9 +4,9 @@ services:
     container_name: reserva_gavea_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: reserva_quadras
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-reserva_quadras}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -29,10 +29,10 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: reserva_quadras
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      JWT_SECRET_KEY: chave_secreta_desenvolvimento_docker
+      DB_NAME: ${DB_NAME:-reserva_quadras}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local_dev_only}
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
     ports:
