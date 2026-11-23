@@ -31,6 +31,13 @@ class UsuarioRepository:
         return usuario
 
     def salvar(self, usuario: Usuario) -> Usuario:
-        self._db.commit()
+        try:
+            self._db.commit()
+        except IntegrityError:
+            self._db.rollback()
+            raise ConflitoError(
+                "Não foi possível salvar as alterações do perfil."
+            ) from None
+
         self._db.refresh(usuario)
         return usuario

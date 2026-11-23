@@ -19,6 +19,18 @@ type LoginPayload = {
   senha: string;
 };
 
+export type AtualizarPerfilPayload = {
+  nome: string;
+  telefone: string;
+  cidade: string;
+};
+
+export type AlterarSenhaPayload = {
+  senha_atual: string;
+  nova_senha: string;
+  confirmar_nova_senha: string;
+};
+
 export type Usuario = {
   id: number;
   nome: string;
@@ -182,4 +194,32 @@ export async function buscarUsuarioAtual(): Promise<Usuario> {
   const resposta = await fetchAutenticado("/auth/me");
 
   return tratarResposta<Usuario>(resposta);
+}
+
+export async function atualizarPerfil(
+  dados: AtualizarPerfilPayload,
+): Promise<Usuario> {
+  const resposta = await fetchAutenticado("/auth/me", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dados),
+  });
+
+  return tratarResposta<Usuario>(resposta);
+}
+
+export async function alterarSenha(
+  dados: AlterarSenhaPayload,
+): Promise<void> {
+  const resposta = await fetchAutenticado("/auth/me/senha", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dados),
+  });
+
+  return tratarResposta<void>(resposta);
 }

@@ -5,12 +5,13 @@ import HomePage from "./pages/HomePage";
 import HorariosPage from "./pages/HorariosPage";
 import LoginPage from "./pages/LoginPage";
 import MinhasReservasPage from "./pages/MinhasReservasPage";
+import PerfilPage from "./pages/PerfilPage";
 import QuadrasAdminPage from "./pages/QuadrasAdminPage";
 import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
   const route = useHashRoute();
-  const { usuario, carregando, entrar, sair } = useSessao();
+  const { usuario, carregando, entrar, sair, atualizarUsuario } = useSessao();
 
   if (carregando) {
     return <p className="app-loading">Carregando...</p>;
@@ -48,6 +49,22 @@ export default function App() {
         onLogout={sair}
       >
         <MinhasReservasPage />
+      </AppLayout>
+    );
+  }
+
+  if (route === "#/perfil") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Meu Perfil"
+        onLogout={sair}
+      >
+        <PerfilPage
+          usuario={usuario}
+          onAtualizarUsuario={atualizarUsuario}
+        />
       </AppLayout>
     );
   }

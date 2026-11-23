@@ -250,3 +250,71 @@ def test_cadastro_recusa_cpf_com_digitos_unicode(client: TestClient) -> None:
         )
         assert resposta.status_code == 422
         assert resposta.json()["detail"] == "CPF deve conter apenas dígitos ASCII."
+
+def test_atualizar_perfil_do_atleta(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    resposta = client.patch(
+        "/auth/me",
+        json={
+            "nome": "  Gustavo Morais Atualizado  ",
+            "telefone": "(12) 99123-4567",
+            "cidade": "São José dos Campos",
+        },
+        headers=atleta,
+    )
+
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert dados["nome"] == "Gustavo Morais Atualizado"
+    assert dados["telefone"] == "12991234567"
+    assert dados["cidade"] == "São José dos Campos"
+
+
+def test_atualizar_perfil_recusa_telefone_invalido(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    resposta = client.patch(
+        "/auth/me",
+        json={
+            "nome": "Atleta Teste",
+            "telefone": "123456789",
+            "cidade": "Caçapava",
+        },
+        headers=atleta,
+    )
+
+    assert resposta.status_code == 422
+
+
+def test_alterar_senha_do_atleta(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    erro_atual = client.patch(
+        "/auth/me/senha",
+        json={
+            "senha_atual": "senha_errada",
+            "nova_senha": "novaSenha123",
+            "confirmar_nova_senha": "novaSenha123",
+        },
+        headers=atleta,
+    )
+    assert erro_atual.status_code == 422
+    assert erro_atual.json()["detail"] == "Senha atual incorreta."
+
+    ok = client.patch(
+        "/auth/me/senha",
+        json={
+            "senha_atual": "senha1234",
+            "nova_senha": "novaSenha123",
+            "confirmar_nova_senha": "novaSenha123",
+        },
+        headers=atleta,
+    )
+    assert ok.status_code == 204
+
+    login_novo = client.post(
+        "/auth/login",
+        json={"email": "atleta@teste.com", "senha": "novaSenha123"},
+    )
+    assert login_novo.status_code == 200
