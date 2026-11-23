@@ -4,6 +4,7 @@ import { useSessao } from "./hooks/useSessao";
 import HomePage from "./pages/HomePage";
 import HorariosPage from "./pages/HorariosPage";
 import LoginPage from "./pages/LoginPage";
+import MinhasReservasPage from "./pages/MinhasReservasPage";
 import QuadrasAdminPage from "./pages/QuadrasAdminPage";
 import RegisterPage from "./pages/RegisterPage";
 
@@ -34,6 +35,19 @@ export default function App() {
         onLogout={sair}
       >
         <HorariosPage />
+      </AppLayout>
+    );
+  }
+
+  if (route === "#/minhas-reservas") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Minhas Reservas"
+        onLogout={sair}
+      >
+        <MinhasReservasPage />
       </AppLayout>
     );
   }
