@@ -86,6 +86,10 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
         const nome = String(data.get("nome") ?? "").trim();
         const confirmarSenha = String(data.get("confirmarSenha") ?? "");
 
+        // Valida depois do trim pra não deixar passar campo só com espaço
+        if (nome.length < 3) { throw new Error("O nome deve ter pelo menos 3 caracteres."); }
+        if (cidade.length < 2) { throw new Error("A cidade deve ter pelo menos 2 caracteres."); }
+
         if (cpf.length !== 11) {
           throw new Error("Informe um CPF com 11 dígitos.");
         }
