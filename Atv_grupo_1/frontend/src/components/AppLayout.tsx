@@ -42,14 +42,31 @@ const ICONE_HORARIOS = (
   </svg>
 );
 
+const ICONE_MINHAS_RESERVAS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
+  {
+    rota: "#/minhas-reservas",
+    rotulo: "Minhas Reservas",
+    icone: ICONE_MINHAS_RESERVAS,
+  },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
+  {
+    rota: "#/minhas-reservas",
+    rotulo: "Minhas Reservas",
+    icone: ICONE_MINHAS_RESERVAS,
+  },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
 ];
 

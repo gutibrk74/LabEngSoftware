@@ -37,3 +37,8 @@ class ReservaResponse(BaseModel):
     criado_em: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ReservaAtletaResponse(ReservaResponse):
+    quadra_nome: str
+    quadra_esporte: str 
