@@ -21,7 +21,11 @@ from app.schemas.usuario import (
 
 
 def normalizar_apenas_digitos(valor: str) -> str:
-    return "".join(caractere for caractere in valor if caractere.isdigit())
+    return "".join(
+        caractere
+        for caractere in valor
+        if caractere.isascii() and caractere.isdigit()
+    )
 
 
 class AuthService:
@@ -29,6 +33,9 @@ class AuthService:
         self._repositorio = repositorio
 
     def cadastrar(self, dados: UsuarioCreate) -> Usuario:
+        if not dados.cpf.isascii():
+            raise DadosInvalidosError("CPF deve conter apenas dígitos ASCII.")
+
         email = str(dados.email).strip().lower()
         cpf = normalizar_apenas_digitos(dados.cpf)
         telefone = normalizar_apenas_digitos(dados.telefone)
