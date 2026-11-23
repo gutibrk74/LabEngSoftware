@@ -49,6 +49,13 @@ const ICONE_MINHAS_RESERVAS = (
   </svg>
 );
 
+const ICONE_PERFIL = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c1.8-3.6 5-5.5 8-5.5s6.2 1.9 8 5.5" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
@@ -57,6 +64,7 @@ const MENU_ATLETA: ItemMenu[] = [
     rotulo: "Minhas Reservas",
     icone: ICONE_MINHAS_RESERVAS,
   },
+  { rota: "#/perfil", rotulo: "Meu Perfil", icone: ICONE_PERFIL },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
@@ -68,6 +76,7 @@ const MENU_ADMIN: ItemMenu[] = [
     icone: ICONE_MINHAS_RESERVAS,
   },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
+  { rota: "#/perfil", rotulo: "Meu Perfil", icone: ICONE_PERFIL },
 ];
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
