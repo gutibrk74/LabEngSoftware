@@ -17,6 +17,24 @@ class UsuarioCreate(BaseModel):
         return self
 
 
+class UsuarioUpdate(BaseModel):
+    nome: str = Field(min_length=3, max_length=120)
+    telefone: str = Field(min_length=10, max_length=15)
+    cidade: str = Field(min_length=2, max_length=100)
+
+
+class AlterarSenhaRequest(BaseModel):
+    senha_atual: str = Field(min_length=1, max_length=128)
+    nova_senha: str = Field(min_length=8, max_length=128)
+    confirmar_nova_senha: str = Field(min_length=8, max_length=128)
+
+    @model_validator(mode="after")
+    def validar_nova_senha(self) -> "AlterarSenhaRequest":
+        if self.nova_senha != self.confirmar_nova_senha:
+            raise ValueError("As senhas não coincidem")
+        return self
+
+
 class UsuarioResponse(BaseModel):
     id: int
     nome: str
@@ -27,9 +45,9 @@ class UsuarioResponse(BaseModel):
     perfil: str
     ativo: bool
 
-    model_config = {"from_attributes": True}            
-    
-    
+    model_config = {"from_attributes": True}
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     senha: str = Field(min_length=1, max_length=128)
