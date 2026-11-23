@@ -43,7 +43,7 @@ class ReservaRepository:
     ) -> list[tuple[Reserva, str, str]]:
         # Traz junto o nome e o esporte da quadra para evitar consultas extras
         consulta = (
-            select(Reserva, Quadra.nome, Quadra.esporte)
+            select(Reserva, Quadra.nome, Quadra.tipo_esporte)
             .join(Quadra, Reserva.quadra_id == Quadra.id)
             .where(Reserva.usuario_id == usuario_id)
             .order_by(Reserva.data.desc(), Reserva.horario.desc())
