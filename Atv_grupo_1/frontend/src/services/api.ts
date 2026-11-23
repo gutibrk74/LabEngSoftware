@@ -36,13 +36,65 @@ export type LoginResponse = {
   usuario: Usuario;
 };
 
+export type ErrosValidacao = Record<string, string>;
+
+type ItemErroFastAPI = {
+  loc?: Array<string | number>;
+  msg?: string;
+  type?: string;
+};
+
+// Traduz as mensagens padrão do Pydantic quando a API devolve erro 422
+function traduzirMensagemValidacao(item: ItemErroFastAPI): string {
+  const mensagem = item.msg ?? "Valor inválido.";
+
+  if (item.type === "string_too_short") {
+    const min = mensagem.match(/at least (\d+)/)?.[1];
+    return min ? `Deve conter pelo menos ${min} caracteres.` : mensagem;
+  }
+
+  if (item.type === "string_too_long") {
+    const max = mensagem.match(/at most (\d+)/)?.[1];
+    return max ? `Deve conter no máximo ${max} caracteres.` : mensagem;
+  }
+
+  return mensagem.replace(/^Value error,\s*/i, "");
+}
+
+// Mapeia o array "detail" do FastAPI para um dicionário { campo: mensagem }
+function extrairErrosCampos(detail: unknown): ErrosValidacao {
+  if (!Array.isArray(detail)) {
+    return {};
+  }
+
+  const erros: ErrosValidacao = {};
+  for (const item of detail as ItemErroFastAPI[]) {
+    if (!Array.isArray(item.loc) || item.loc.length === 0) {
+      continue;
+    }
+
+    const campo = String(item.loc[item.loc.length - 1]);
+    if (!erros[campo]) {
+      erros[campo] = traduzirMensagemValidacao(item);
+    }
+  }
+
+  return erros;
+}
+
 export class ErroApi extends Error {
   readonly status: number;
+  readonly errosCampos: ErrosValidacao;
 
-  constructor(mensagem: string, status: number) {
+  constructor(
+    mensagem: string,
+    status: number,
+    errosCampos: ErrosValidacao = {},
+  ) {
     super(mensagem);
     this.name = "ErroApi";
     this.status = status;
+    this.errosCampos = errosCampos;
   }
 }
 
@@ -54,12 +106,16 @@ export async function tratarResposta<T>(resposta: Response): Promise<T> {
   const corpo = await resposta.json();
 
   if (!resposta.ok) {
+    const errosCampos =
+      resposta.status === 422 ? extrairErrosCampos(corpo.detail) : {};
+    const primeiroErroCampo = Object.values(errosCampos)[0];
+
     const detalhe =
       typeof corpo.detail === "string"
         ? corpo.detail
-        : "Não foi possível concluir a operação.";
+        : primeiroErroCampo ?? "Não foi possível concluir a operação.";
 
-    throw new ErroApi(detalhe, resposta.status);
+    throw new ErroApi(detalhe, resposta.status, errosCampos);
   }
 
   return corpo as T;

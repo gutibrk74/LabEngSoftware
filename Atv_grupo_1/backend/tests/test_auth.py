@@ -239,3 +239,14 @@ def test_login_do_admin_informa_o_perfil(
     )
 
     assert resposta.json()["usuario"]["perfil"] == "administrador"
+
+
+def test_cadastro_recusa_cpf_com_digitos_unicode(client: TestClient) -> None:
+    client.post("/auth/register", json=dados_cadastro("a@a.com", "12345678901"))
+
+    for cpf_unicode in ("１２３４５６７８９０１", "1234567890١"):
+        resposta = client.post(
+            "/auth/register", json=dados_cadastro("b@b.com", cpf_unicode)
+        )
+        assert resposta.status_code == 422
+        assert resposta.json()["detail"] == "CPF deve conter apenas dígitos ASCII."

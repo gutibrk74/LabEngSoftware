@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
 import "../styles/login.css";
-import { cadastrarUsuario, fazerLogin } from "../services/api";
-import type { LoginResponse } from "../services/api";
+import { ErroApi, cadastrarUsuario, fazerLogin } from "../services/api";
+import type { ErrosValidacao, LoginResponse } from "../services/api";
 
 type AuthPageProps = {
   mode: "login" | "cadastro";
@@ -13,10 +13,12 @@ function PasswordField({
   label,
   name,
   creating = false,
+  error,
 }: {
   label: string;
   name: string;
   creating?: boolean;
+  error?: string;
 }) {
   const id = useId();
   const [visible, setVisible] = useState(false);
@@ -33,6 +35,7 @@ function PasswordField({
           placeholder="Digite sua senha"
           autoComplete={creating ? "new-password" : "current-password"}
           minLength={creating ? 8 : undefined}
+          aria-invalid={Boolean(error)}
           required
         />
 
@@ -59,6 +62,12 @@ function PasswordField({
           </svg>
         </button>
       </div>
+
+      {error && (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }
@@ -66,11 +75,13 @@ function PasswordField({
 export default function AuthPage({ mode, onLogin }: AuthPageProps) {
   const isRegister = mode === "cadastro";
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ErrosValidacao>({});
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    setFieldErrors({});
     setLoading(true);
 
     const data = new FormData(event.currentTarget);
@@ -86,15 +97,31 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
         const nome = String(data.get("nome") ?? "").trim();
         const confirmarSenha = String(data.get("confirmarSenha") ?? "");
 
+        // Valida depois do trim pra não deixar passar campo só com espaço
+        if (nome.length < 3) {
+          setFieldErrors({ nome: "O nome deve ter pelo menos 3 caracteres." });
+          throw new Error("O nome deve ter pelo menos 3 caracteres.");
+        }
+
+        if (cidade.length < 2) {
+          setFieldErrors({
+            cidade: "A cidade deve ter pelo menos 2 caracteres.",
+          });
+          throw new Error("A cidade deve ter pelo menos 2 caracteres.");
+        }
+
         if (cpf.length !== 11) {
+          setFieldErrors({ cpf: "Informe um CPF com 11 dígitos." });
           throw new Error("Informe um CPF com 11 dígitos.");
         }
 
         if (telefone.length < 10 || telefone.length > 11) {
+          setFieldErrors({ telefone: "Informe um telefone válido com DDD." });
           throw new Error("Informe um telefone válido com DDD.");
         }
 
         if (senha !== confirmarSenha) {
+          setFieldErrors({ confirmar_senha: "As senhas não coincidem." });
           throw new Error("As senhas não coincidem.");
         }
 
@@ -124,6 +151,11 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
         onLogin?.(resposta);
       }
     } catch (error) {
+      // Se o backend devolver 422 com erro por campo, exibe direto no input correspondente
+      if (error instanceof ErroApi && error.status === 422) {
+        setFieldErrors((prev) => ({ ...prev, ...error.errosCampos }));
+      }
+
       setMessage(
         error instanceof Error
           ? error.message
@@ -181,7 +213,10 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
           <form
             className="login-form"
             onSubmit={handleSubmit}
-            onChange={() => setMessage("")}
+            onChange={() => {
+              setMessage("");
+              setFieldErrors({});
+            }}
           >
             {isRegister && (
               <div className="login-field">
@@ -193,8 +228,14 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                   placeholder="Seu nome completo"
                   autoComplete="name"
                   maxLength={120}
+                  aria-invalid={Boolean(fieldErrors.nome)}
                   required
                 />
+                {fieldErrors.nome && (
+                  <span className="field-error" role="alert">
+                    {fieldErrors.nome}
+                  </span>
+                )}
               </div>
             )}
 
@@ -206,8 +247,14 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                 type="email"
                 placeholder="seu@email.com"
                 autoComplete={isRegister ? "email" : "username"}
+                aria-invalid={Boolean(fieldErrors.email)}
                 required
               />
+              {fieldErrors.email && (
+                <span className="field-error" role="alert">
+                  {fieldErrors.email}
+                </span>
+              )}
             </div>
 
             {isRegister && (
@@ -222,8 +269,14 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                       placeholder="(12) 99999-9999"
                       autoComplete="tel-national"
                       maxLength={15}
+                      aria-invalid={Boolean(fieldErrors.telefone)}
                       required
                     />
+                    {fieldErrors.telefone && (
+                      <span className="field-error" role="alert">
+                        {fieldErrors.telefone}
+                      </span>
+                    )}
                   </div>
 
                   <div className="login-field">
@@ -235,8 +288,14 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                       inputMode="numeric"
                       placeholder="000.000.000-00"
                       maxLength={14}
+                      aria-invalid={Boolean(fieldErrors.cpf)}
                       required
                     />
+                    {fieldErrors.cpf && (
+                      <span className="field-error" role="alert">
+                        {fieldErrors.cpf}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -249,8 +308,14 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                     placeholder="Sua cidade"
                     autoComplete="address-level2"
                     maxLength={100}
+                    aria-invalid={Boolean(fieldErrors.cidade)}
                     required
                   />
+                  {fieldErrors.cidade && (
+                    <span className="field-error" role="alert">
+                      {fieldErrors.cidade}
+                    </span>
+                  )}
                 </div>
               </>
             )}
@@ -259,6 +324,7 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
               label="Senha"
               name="senha"
               creating={isRegister}
+              error={fieldErrors.senha}
             />
 
             {isRegister && (
@@ -267,6 +333,7 @@ export default function AuthPage({ mode, onLogin }: AuthPageProps) {
                   label="Confirmar senha"
                   name="confirmarSenha"
                   creating
+                  error={fieldErrors.confirmar_senha}
                 />
 
                 <p className="auth-hint">
