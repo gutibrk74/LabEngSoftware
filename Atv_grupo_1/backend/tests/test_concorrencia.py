@@ -4,7 +4,8 @@ Os pedidos são disparados ao mesmo tempo em threads (cada uma com seu
 cliente e sua conexão com o banco), liberadas juntas por uma barreira.
 Quem garante a regra é o índice único parcial do banco
 "uq_reservas_quadra_data_horario" (quadra + data + horário, ignorando
-reservas canceladas).
+reservas canceladas), tanto para reservas novas quanto para a reativação
+de uma reserva cancelada pelo administrador (US07).
 """
 
 import threading
@@ -143,6 +144,58 @@ def test_horario_cancelado_volta_a_ser_disputado_corretamente(
 
     assert codigos.count(201) == 1
     assert reservas_ativas(quadra["id"], 19) == 1
+
+
+@pytest.mark.parametrize("rodada", range(1, 6))
+def test_reativacao_pelo_admin_disputa_o_horario_com_atletas(
+    atletas: list[Cabecalho],
+    admin: Cabecalho,
+    quadra: dict[str, Any],
+    rodada: int,
+) -> None:
+    # US07: reativar uma reserva cancelada também precisa respeitar o índice
+    # único. O admin reativa enquanto 9 atletas tentam reservar o mesmo
+    # horário: só um dos 10 pedidos pode ficar com ele.
+    horario = 13 + rodada  # um horário diferente por rodada
+    assert reservar(quadra["id"], horario, atletas[0]) == 201
+    with SessionLocal() as db:
+        reserva_id = (
+            db.query(Reserva.id).filter(Reserva.horario == horario).scalar()
+        )
+    cancelada = TestClient(app).patch(
+        f"/reservas/{reserva_id}/cancelar", headers=atletas[0]
+    )
+    assert cancelada.status_code == 200
+
+    def reativar() -> int:
+        return (
+            TestClient(app)
+            .patch(
+                f"/admin/reservas/{reserva_id}/status",
+                json={"status": "pendente"},
+                headers=admin,
+            )
+            .status_code
+        )
+
+    # Reativação aceita = 200; reserva nova aceita = 201; recusa = 409.
+    codigos = disparar_juntos(
+        [reativar]
+        + [
+            partial(reservar, quadra["id"], horario, cabecalho)
+            for cabecalho in atletas[1:]
+        ]
+    )
+
+    vencedor = "admin (reativou)" if 200 in codigos else "um atleta (nova reserva)"
+    print(
+        f"\n[rodada {rodada}] admin reativando + 9 atletas reservando "
+        f"{horario}h: {codigos.count(200) + codigos.count(201)} aceito(s), "
+        f"{codigos.count(409)} recusado(s) (409); ficou com o horário: {vencedor}"
+    )
+    assert codigos.count(200) + codigos.count(201) == 1
+    assert codigos.count(409) == PEDIDOS_SIMULTANEOS - 1
+    assert reservas_ativas(quadra["id"], horario) == 1
 
 
 def test_banco_barra_gravacoes_simultaneas_sem_passar_pela_api(
