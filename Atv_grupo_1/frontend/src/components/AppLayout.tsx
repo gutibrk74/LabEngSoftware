@@ -49,6 +49,13 @@ const ICONE_MINHAS_RESERVAS = (
   </svg>
 );
 
+const ICONE_GESTAO_RESERVAS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3" />
+  </svg>
+);
+
 const ICONE_PERFIL = (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <circle cx="12" cy="8" r="4" />
@@ -75,6 +82,7 @@ const MENU_ADMIN: ItemMenu[] = [
     rotulo: "Minhas Reservas",
     icone: ICONE_MINHAS_RESERVAS,
   },
+  { rota: "#/reservas", rotulo: "Reservas", icone: ICONE_GESTAO_RESERVAS },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
   { rota: "#/perfil", rotulo: "Meu Perfil", icone: ICONE_PERFIL },
 ];
