@@ -41,26 +41,29 @@ export default function MinhasReservasPage() {
   const [reservaParaCancelar, setReservaParaCancelar] =
     useState<ReservaAtleta | null>(null);
 
+  // Só altera o estado nos callbacks, depois da resposta da API.
+  function buscarReservas(): Promise<void> {
+    return listarMinhasReservas()
+      .then((dados) => setReservas(dados))
+      .catch((error: unknown) =>
+        setErro(
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar suas reservas.",
+        ),
+      )
+      .finally(() => setCarregando(false));
+  }
+
   async function carregar() {
     setCarregando(true);
     setErro("");
-
-    try {
-      const dados = await listarMinhasReservas();
-      setReservas(dados);
-    } catch (error) {
-      setErro(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível carregar suas reservas.",
-      );
-    } finally {
-      setCarregando(false);
-    }
+    await buscarReservas();
   }
 
+  // Na montagem, "carregando" e "erro" já começam no estado de carga.
   useEffect(() => {
-    carregar();
+    buscarReservas();
   }, []);
 
   async function confirmarCancelamento() {
