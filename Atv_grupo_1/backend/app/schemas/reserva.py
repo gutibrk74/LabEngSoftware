@@ -41,4 +41,14 @@ class ReservaResponse(BaseModel):
 
 class ReservaAtletaResponse(ReservaResponse):
     quadra_nome: str
-    quadra_esporte: str 
+    quadra_esporte: str
+
+
+class ReservaAdminResponse(ReservaAtletaResponse):
+    usuario_id: int
+    atleta_nome: str
+    atleta_email: str
+
+
+class AlterarStatusReserva(BaseModel):
+    status: StatusReserva
