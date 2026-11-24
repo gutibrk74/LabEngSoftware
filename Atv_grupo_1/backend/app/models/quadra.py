@@ -53,7 +53,7 @@ class Quadra(Base):
     comprimento_m: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
     largura_m: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
 
-    # Valor base; as regras por dia/horário ficam na US09.
+    # Preço da hora; cada reserva guarda o valor do momento em que foi feita.
     preco_hora: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     # Horário de funcionamento em horas cheias (ex.: 8 às 22).
