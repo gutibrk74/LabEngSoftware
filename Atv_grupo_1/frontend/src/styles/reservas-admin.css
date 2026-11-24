@@ -1,0 +1,181 @@
+/* Gestão de reservas (admin) */
+
+.reservas-admin-cabecalho h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 28px);
+  letter-spacing: -0.5px;
+}
+
+.reservas-admin-cabecalho p {
+  margin: 6px 0 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.reservas-admin-filtros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0 12px;
+  padding: 16px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.reservas-admin-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+.reservas-admin-atalho {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid #2c2c31;
+  border-radius: 999px;
+  background: transparent;
+  color: #d4d4d8;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.reservas-admin-atalho:hover {
+  border-color: #4a4a52;
+}
+
+.reservas-admin-atalho:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
+}
+
+.reservas-admin-atalho--ativo {
+  border-color: #d1131a;
+  background: rgb(209 19 26 / 15%);
+  color: #fff;
+}
+
+.reservas-admin-resumo {
+  margin: 0 0 12px;
+  color: #b6b6bd;
+  font-size: 14px;
+}
+
+.reservas-admin-vazio {
+  padding: 36px 24px;
+  border: 1px dashed #27272a;
+  border-radius: 14px;
+  color: #8a8a93;
+  text-align: center;
+}
+
+/* A tabela rola dentro do próprio contêiner em telas estreitas. */
+.reservas-admin-tabela-wrap {
+  overflow-x: auto;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.reservas-admin-tabela {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.reservas-admin-tabela th {
+  padding: 12px 14px;
+  border-bottom: 1px solid #202024;
+  color: #8a8a93;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reservas-admin-tabela td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #1a1a1e;
+  color: #e4e4e7;
+  vertical-align: top;
+}
+
+.reservas-admin-tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.reservas-admin-tabela td strong {
+  display: block;
+  font-weight: 600;
+}
+
+.reservas-admin-tabela .coluna-valor {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.reservas-admin-tabela .linha--cancelada td {
+  color: #8a8a93;
+}
+
+.celula-detalhe {
+  display: block;
+  margin-top: 2px;
+  color: #8a8a93;
+  font-size: 12px;
+}
+
+.celula-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.celula-erro {
+  max-width: 280px;
+  margin: 8px 0 0;
+  color: #ff666b;
+  font-size: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge--pendente {
+  background: rgb(234 179 8 / 15%);
+  color: #facc15;
+}
+
+.status-badge--paga {
+  background: rgb(34 197 94 / 15%);
+  color: #4ade80;
+}
+
+.status-badge--cancelada {
+  background: rgb(209 19 26 / 18%);
+  color: #ff666b;
+}
+
+@media (max-width: 900px) {
+  .reservas-admin-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .reservas-admin-filtros {
+    grid-template-columns: 1fr;
+  }
+}
