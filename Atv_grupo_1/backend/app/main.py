@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import (
     auth_router,
+    metricas_router,
     quadras_admin_router,
     quadras_router,
     reservas_admin_router,
@@ -52,6 +53,7 @@ app.include_router(quadras_router)
 app.include_router(quadras_admin_router)
 app.include_router(reservas_router)
 app.include_router(reservas_admin_router)
+app.include_router(metricas_router)
 
 
 @app.get("/")
