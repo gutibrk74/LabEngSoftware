@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import ConflitoError
 from app.models.quadra import Quadra
 from app.models.reserva import Reserva
+from app.repositories.integridade import constraint_violada
 
 INDICE_HORARIO_UNICO = "uq_reservas_quadra_data_horario"
 
@@ -51,29 +52,30 @@ class ReservaRepository:
         return list(self._db.execute(consulta).all())
 
     def adicionar(self, reserva: Reserva) -> Reserva:
-        try:
-            self._db.add(reserva)
-            self._db.commit()
-        except IntegrityError as erro:
-            self._db.rollback()
-
-            # Só o índice de horário vira 409; outros erros seguem adiante.
-            if INDICE_HORARIO_UNICO in str(erro.orig):
-                raise ConflitoError("Esse horário já foi reservado.") from None
-            raise
-
-        self._db.refresh(reserva)
-        return reserva
+        self._db.add(reserva)
+        return self._confirmar(reserva)
 
     def cancelar(self, reserva: Reserva) -> Reserva:
         reserva.status = "cancelada"
+        return self._confirmar(reserva)
+
+    def _confirmar(self, reserva: Reserva) -> Reserva:
+        # Toda gravação de reserva passa por aqui, para que qualquer caminho
+        # que deixe uma reserva ativa (criar, reativar...) tenha o mesmo
+        # tratamento do índice de horário único.
         try:
             self._db.commit()
-        except IntegrityError:
+        except Exception as erro:
+            # Desfaz em qualquer falha, para a sessão continuar utilizável.
             self._db.rollback()
-            raise ConflitoError(
-                "Não foi possível cancelar a reserva no momento."
-            ) from None
+
+            # Só o índice de horário vira 409; outros erros seguem adiante.
+            if (
+                isinstance(erro, IntegrityError)
+                and constraint_violada(erro) == INDICE_HORARIO_UNICO
+            ):
+                raise ConflitoError("Esse horário já foi reservado.") from None
+            raise
 
         self._db.refresh(reserva)
         return reserva
