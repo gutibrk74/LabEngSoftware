@@ -17,7 +17,8 @@ from sqlalchemy.exc import IntegrityError
 from apoio import Cabecalho
 from app.core.exceptions import ConflitoError
 from app.db.session import SessionLocal
-from app.models import Reserva, Usuario
+from app.models import Quadra, Reserva, Usuario
+from app.repositories.quadra_repository import QuadraRepository
 from app.repositories.reserva_repository import ReservaRepository
 
 CriarQuadra = Callable[..., dict[str, Any]]
@@ -102,3 +103,47 @@ def test_cancelar_nao_esconde_erro_que_nao_e_de_horario(
         recarregada = repositorio.buscar_por_id(reserva.id)
         assert recarregada is not None
         assert (recarregada.status, recarregada.horario) == ("pendente", 19)
+
+
+# ------------------------------------------------------------------- quadras
+
+
+def nova_quadra(nome: str, **extras: Any) -> Quadra:
+    campos: dict[str, Any] = {
+        "nome": nome,
+        "tipo_esporte": "tenis",
+        "piso": "Saibro",
+        "comprimento_m": Decimal("23.77"),
+        "largura_m": Decimal("10.97"),
+        "preco_hora": Decimal("80"),
+        **extras,
+    }
+    return Quadra(**campos)
+
+
+def test_nome_repetido_vira_conflito_de_nome() -> None:
+    with SessionLocal() as db:
+        repositorio = QuadraRepository(db)
+        repositorio.adicionar(nova_quadra("Arena"))
+
+        with pytest.raises(ConflitoError, match="Já existe uma quadra"):
+            repositorio.adicionar(nova_quadra("ARENA"))
+
+        assert [q.nome for q in repositorio.listar(apenas_ativas=False)] == [
+            "Arena"
+        ]
+
+
+def test_erro_que_nao_e_de_nome_nao_vira_conflito_de_nome() -> None:
+    with SessionLocal() as db:
+        repositorio = QuadraRepository(db)
+
+        # Horário invertido viola ck_quadras_horario: antes a resposta era
+        # "Já existe uma quadra com este nome."; agora o erro real sobe.
+        with pytest.raises(IntegrityError, match="ck_quadras_horario"):
+            repositorio.adicionar(
+                nova_quadra("Arena", hora_abertura=20, hora_fechamento=10)
+            )
+
+        # Rollback feito: a sessão segue funcionando e nada foi gravado.
+        assert repositorio.listar(apenas_ativas=False) == []
