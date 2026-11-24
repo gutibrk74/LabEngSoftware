@@ -6,6 +6,7 @@ from app.api import (
     auth_router,
     quadras_admin_router,
     quadras_router,
+    reservas_admin_router,
     reservas_router,
 )
 from app.core.exceptions import ErroDominio
@@ -50,6 +51,7 @@ app.include_router(auth_router)
 app.include_router(quadras_router)
 app.include_router(quadras_admin_router)
 app.include_router(reservas_router)
+app.include_router(reservas_admin_router)
 
 
 @app.get("/")
