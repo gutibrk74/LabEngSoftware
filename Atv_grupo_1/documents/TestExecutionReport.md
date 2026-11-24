@@ -4,11 +4,11 @@
 
 | Item | Valor |
 | --- | --- |
-| Última execução | 23/11/2026 |
-| Versão testada | branch `Develop` (após entregas US02 e US06) |
-| Ambiente | Python 3.12.16, pytest 9.1.1, PostgreSQL 15/16 (Docker Compose) |
+| Última execução | 24/11/2026 |
+| Versão testada | branch `feat/us07-gestao-reservas-admin` (Develop + US07 e correções de integridade nos repositórios) |
+| Ambiente | Python 3.12.3, pytest 9.1.1, PostgreSQL 16.15 (execução local) |
 | Comando | `pytest -v` (na pasta `Atv_grupo_1/backend`) |
-| Resultado | **104 testes — 104 passaram, 0 falharam** |
+| Resultado | **129 testes — 129 passaram, 0 falharam** |
 | Estabilidade | suíte executada localmente e em container Docker sem nenhuma falha |
 
 Os testes ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreSQL próprio (`reserva_quadras_test`), criado e migrado automaticamente. O banco de desenvolvimento nunca é usado.
@@ -46,8 +46,10 @@ O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de b
 | `test_quadras.py` | US08 Infraestrutura | 22 | CRUD de quadras, validações, nome único e permissões |
 | `test_busca.py` | US03 Busca | 13 | filtros por esporte e por data |
 | `test_reservas.py` | US04 Grade, US05 Reserva e US06 Minhas Reservas | 33 | grade de horários, regras da reserva, listagem do atleta, cancelamento com antecedência e restrições do banco |
-| `test_concorrencia.py` | US05 Reserva | 9 | pedidos simultâneos para o mesmo horário |
-| **Total** | | **104** | |
+| `test_admin_reservas.py` | US07 Gestão de Reservas | 15 | listagem e filtros do admin, permissões, pagamento, cancelamento sem antecedência mínima e regras de reativação |
+| `test_repositorios.py` | US05 / US08 (integridade) | 5 | só o índice de horário (reservas) e o índice de nome (quadras) viram 409; outros erros sobem e a sessão é desfeita |
+| `test_concorrencia.py` | US05 Reserva e US07 | 14 | pedidos simultâneos para o mesmo horário, inclusive a reativação pelo administrador |
+| **Total** | | **129** | |
 
 Os testes de horário usam um relógio fixo (sábado, 10/10/2026, 15h30 em São Paulo), para que o resultado não dependa do dia em que a suíte é executada.
 
@@ -92,6 +94,26 @@ A garantia não depende apenas de uma checagem no código (que dois pedidos simu
 | Horário com reserva **cancelada** disputado por 10 atletas ao mesmo tempo | 1 aceito, 9 recusados — o cancelamento libera o horário e a regra continua valendo |
 | 10 gravações simultâneas **direto no banco**, sem passar pela API nem pelas regras do serviço | só 1 foi gravada — a garantia está no banco, não só no código |
 | 3 cadastros simultâneos de quadra com o mesmo nome ("Arena", "ARENA", "arena") | 1 aceito, 2 recusados — nome único sem diferenciar maiúsculas |
+
+### Reativação pelo administrador (US07)
+
+Reativar uma reserva cancelada a deixa ativa de novo, então ela também disputa o horário pelo índice `uq_reservas_quadra_data_horario`. O serviço **não** consulta a ocupação antes de gravar: quem decide é o banco, e o `ReservaRepository._confirmar()` converte a recusa em `409 — Esse horário já foi reservado.`
+
+**Metodologia:** a mesma da seção anterior (threads, um cliente HTTP por pedido e barreira). Em cada rodada, um atleta reserva e cancela um horário; em seguida, **o administrador reativa essa reserva ao mesmo tempo que 9 outros atletas tentam reservar o mesmo horário**. A reativação aceita responde `200`, a reserva nova aceita responde `201` e as recusas respondem `409`.
+
+| Rodada | Horário disputado | Pedidos simultâneos | Aceitos | Recusados (409) | Reservas ativas no banco | Ficou com o horário |
+| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| 1 | 14h | 10 | 1 | 9 | 1 | um atleta (nova reserva) |
+| 2 | 15h | 10 | 1 | 9 | 1 | um atleta (nova reserva) |
+| 3 | 16h | 10 | 1 | 9 | 1 | um atleta (nova reserva) |
+| 4 | 17h | 10 | 1 | 9 | 1 | um atleta (nova reserva) |
+| 5 | 18h | 10 | 1 | 9 | 1 | um atleta (nova reserva) |
+
+**Em todas as rodadas, um único pedido ficou com o horário.** Nesta execução, o administrador perdeu as 5 disputas: o caminho da reativação faz mais leituras antes do commit e chega depois. Como o serviço não verifica a ocupação antes de gravar, o `409` recebido pelo administrador só pode ter vindo do índice do banco, convertido pelo `_confirmar()`, que é exatamente o caminho que o teste precisa comprovar. O caso inverso (reativação aceita e atleta recusado) é verificado sem concorrência em `test_admin_reservas.py::test_reativar_volta_para_pendente_e_ocupa_o_horario`.
+
+### Verificação manual da tela Gestão de Reservas
+
+A tela `#/reservas` foi exercitada no Chrome (modo headless, API e frontend apontando para o banco de testes) com 7 reservas de 2 atletas em 2 quadras. Resultado: menu e título corretos para o administrador; 7 reservas no período padrão (hoje até hoje + 7); marcar como paga e desfazer; confirmação antes de cancelar (e "Voltar" não altera nada); reativar um horário já ocupado mostra "Esse horário já foi reservado." no modal e mantém a reserva cancelada; reativar um horário livre volta para pendente; filtros de status e atalho "Hoje"; sem rolagem horizontal da página em 390 px (a tabela rola dentro do próprio contêiner); o atleta que abre `#/reservas` vai para o Início e não vê o item no menu.
 
 ---
 
@@ -151,3 +173,16 @@ A coluna "Observação" indica o arquivo e o teste automatizado correspondentes 
 | CT-48 | Cancelamento `/reservas/{id}/cancelar` libera horário na grade e bloqueia cancelamento fora do prazo (< 2h) ou por outro usuário (403/422) | ✅ | `test_reservas.py::test_cancelar_reserva_*` (2 testes) | @gutibrk74 | 23/11/2026 |
 | CT-49 | Edição de perfil (`PATCH /auth/me`) atualiza nome, telefone e cidade e recusa telefone inválido — 422 | ✅ | `test_auth.py::test_atualizar_perfil_*` (2 testes) | @gutibrk74 | 23/11/2026 |
 | CT-50 | Alteração de senha (`PATCH /auth/me/senha`) valida senha atual e permite login com a nova senha | ✅ | `test_auth.py::test_alterar_senha_do_atleta` | @gutibrk74 | 23/11/2026 |
+| CT-51 | Repositório de reservas: horário repetido vira 409 e a sessão continua utilizável depois do rollback | ✅ | `test_repositorios.py::test_horario_repetido_vira_conflito_e_sessao_continua_valida` | Mariana | 24/11/2026 |
+| CT-52 | Repositório de reservas: erro de integridade que não é do índice de horário (valor zero; horário inválido no cancelamento) sobe como erro real, sem virar 409, e nada é gravado | ✅ | `test_repositorios.py::test_outro_erro_de_integridade_nao_vira_conflito_de_horario`, `test_cancelar_nao_esconde_erro_que_nao_e_de_horario` | Mariana | 24/11/2026 |
+| CT-53 | Repositório de quadras: nome repetido (sem diferenciar maiúsculas) vira 409; erro que não é de nome (horário invertido) não vira "Já existe uma quadra com este nome." | ✅ | `test_repositorios.py::test_nome_repetido_vira_conflito_de_nome`, `test_erro_que_nao_e_de_nome_nao_vira_conflito_de_nome` | Mariana | 24/11/2026 |
+| CT-54 | Rotas `/admin/reservas`: visitante 401, atleta 403 | ✅ | `test_admin_reservas.py::test_rotas_de_admin_recusam_visitante_e_atleta` | Mariana | 24/11/2026 |
+| CT-55 | Listagem do admin traz nome e e-mail do atleta e nome e esporte da quadra, em ordem de agenda | ✅ | `test_admin_reservas.py::test_lista_traz_atleta_e_quadra_em_ordem_de_agenda` | Mariana | 24/11/2026 |
+| CT-56 | Filtros por período (um dia, só início, só fim), quadra e status; período invertido, status inválido e data mal formatada — 422 | ✅ | `test_admin_reservas.py::test_filtros_por_periodo_quadra_e_status`, `test_filtros_invalidos` | Mariana | 24/11/2026 |
+| CT-57 | Marcar como paga e desfazer o pagamento; pagamento registrado depois do jogo; atleta vê o status atualizado | ✅ | `test_admin_reservas.py::test_marcar_como_paga_e_desfazer`, `test_pagamento_pode_ser_registrado_depois_do_jogo` | Mariana | 24/11/2026 |
+| CT-58 | Admin cancela sem a antecedência de 2h (que o atleta precisa respeitar), cancela reserva paga e reserva passada; o horário volta a ficar livre | ✅ | `test_admin_reservas.py::test_admin_cancela_*` (2 testes) | Mariana | 24/11/2026 |
+| CT-59 | Reativar volta só para pendente, ocupa o horário e impede nova reserva (409); cancelada → paga é recusada — 422 | ✅ | `test_admin_reservas.py::test_reativar_volta_para_pendente_e_ocupa_o_horario`, `test_cancelada_nao_vai_direto_para_paga` | Mariana | 24/11/2026 |
+| CT-60 | Reativar recusa horário já iniciado e quadra inativa — 422 | ✅ | `test_admin_reservas.py::test_reativar_recusa_*` (2 testes) | Mariana | 24/11/2026 |
+| CT-61 | Reativar horário já ocupado por outra reserva — 409 "Esse horário já foi reservado.", sem alterar nenhuma das duas | ✅ | `test_admin_reservas.py::test_reativar_horario_ja_ocupado_responde_409` | Mariana | 24/11/2026 |
+| CT-62 | Mesmo status — 409; reserva inexistente — 404; status inválido — 422 | ✅ | `test_admin_reservas.py::test_mesmo_status_responde_409`, `test_reserva_inexistente_e_status_invalido` | Mariana | 24/11/2026 |
+| CT-63 | **Reativação pelo admin simultânea a 9 reservas de atletas (5 rodadas): 1 aceito e 9 recusados em cada, 1 só reserva ativa no banco** | ✅ | `test_concorrencia.py::test_reativacao_pelo_admin_disputa_o_horario_com_atletas` (5 rodadas) | Mariana | 24/11/2026 |
