@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import ConflitoError
 from app.models.quadra import Quadra
 from app.models.reserva import Reserva
+from app.models.usuario import Usuario
 from app.repositories.integridade import constraint_violada
 
 INDICE_HORARIO_UNICO = "uq_reservas_quadra_data_horario"
@@ -51,12 +52,50 @@ class ReservaRepository:
         )
         return list(self._db.execute(consulta).all())
 
+    def listar_para_admin(
+        self,
+        inicio: date | None = None,
+        fim: date | None = None,
+        quadra_id: int | None = None,
+        status: str | None = None,
+    ) -> list[tuple[Reserva, str, str, str, str]]:
+        # Traz junto quadra (nome, esporte) e atleta (nome, e-mail) numa
+        # consulta só, em ordem de agenda.
+        consulta = (
+            select(
+                Reserva,
+                Quadra.nome,
+                Quadra.tipo_esporte,
+                Usuario.nome,
+                Usuario.email,
+            )
+            .join(Quadra, Reserva.quadra_id == Quadra.id)
+            .join(Usuario, Reserva.usuario_id == Usuario.id)
+            .order_by(Reserva.data, Reserva.horario, Quadra.nome)
+        )
+
+        if inicio is not None:
+            consulta = consulta.where(Reserva.data >= inicio)
+        if fim is not None:
+            consulta = consulta.where(Reserva.data <= fim)
+        if quadra_id is not None:
+            consulta = consulta.where(Reserva.quadra_id == quadra_id)
+        if status is not None:
+            consulta = consulta.where(Reserva.status == status)
+
+        return list(self._db.execute(consulta).all())
+
     def adicionar(self, reserva: Reserva) -> Reserva:
         self._db.add(reserva)
         return self._confirmar(reserva)
 
     def cancelar(self, reserva: Reserva) -> Reserva:
         reserva.status = "cancelada"
+        return self._confirmar(reserva)
+
+    def salvar(self, reserva: Reserva) -> Reserva:
+        # Usado nas mudanças de status feitas pelo administrador; reativar
+        # uma reserva cancelada pode bater no índice de horário único.
         return self._confirmar(reserva)
 
     def _confirmar(self, reserva: Reserva) -> Reserva:
