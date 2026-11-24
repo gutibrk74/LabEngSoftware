@@ -3,7 +3,7 @@
 Aplicação web para **buscar, reservar e gerenciar quadras e campos esportivos**. O sistema atende dois perfis:
 
 - **Atleta** — busca quadras por esporte e data, consulta a grade de horários, realiza e cancela reservas e gerencia seu perfil.
-- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades).
+- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades) e gerencia as reservas (registra pagamentos, cancela e reativa).
 
 Um dos principais objetivos técnicos é **garantir que um mesmo horário nunca seja reservado por duas pessoas**, inclusive quando os pedidos chegam ao mesmo tempo.
 
@@ -29,6 +29,7 @@ Projeto acadêmico da disciplina de **Laboratório de Engenharia de Software**.
 | **US04** — Grade de horários | Grade por quadra e por dia, cruzando o horário de funcionamento com as reservas existentes |
 | **US05** — Confirmação de reserva | Revisão e confirmação da reserva com bloqueio do horário, inclusive em pedidos simultâneos |
 | **US06** — Minhas Reservas | Listagem de agendamentos futuros e histórico do atleta, com cancelamento respeitando antecedência mínima de 2 horas |
+| **US07** — Gestão de Reservas (Admin) | Listagem de todas as reservas com filtros de período, quadra e status (com nome do atleta e da quadra), registro de pagamento, cancelamento sem a antecedência mínima do atleta e reativação de reservas canceladas, protegida contra horário duplicado |
 | **US08** — Infraestrutura (Admin) | CRUD completo de quadras: cadastrar, listar, editar, inativar e reativar |
 
 ---
@@ -75,6 +76,18 @@ Restrição do projeto: **não há decorators customizados nas regras de negóci
 
 A regra "um horário, uma reserva" é garantida **pelo próprio banco**, com um índice único parcial em quadra + data + horário (desconsiderando reservas canceladas). Se dois atletas confirmarem o mesmo horário ao mesmo tempo, só um consegue; o outro recebe a resposta `409 — Esse horário já foi reservado`. Em teste com **10 pedidos simultâneos para o mesmo horário, apenas 1 reserva foi criada**.
 
+O índice vale para **qualquer gravação que deixe uma reserva ativa**, não só para a criação: quando o administrador reativa uma reserva cancelada cujo horário já foi ocupado, a resposta também é `409`. Toda gravação de reserva passa pelo mesmo ponto do `ReservaRepository` (`_confirmar()`), que desfaz a transação em qualquer falha e só transforma em `409` a violação desse índice, identificada pelo nome da constraint informado pelo PostgreSQL; outros erros do banco não são mascarados. O `QuadraRepository` segue o mesmo cuidado com o índice de nome único das quadras.
+
+### Status da reserva
+
+| Status | Como a reserva chega nele |
+| --- | --- |
+| `pendente` | ao ser criada pelo atleta (US05) ou ao ser reativada pelo administrador (US07) |
+| `paga` | **somente pela ação do administrador** na tela Gestão de Reservas (US07). O sistema não tem pagamento online: o administrador registra o pagamento recebido no complexo. |
+| `cancelada` | pelo atleta, com pelo menos 2 horas de antecedência (US06), ou pelo administrador, a qualquer momento (US07) |
+
+Mudanças que o administrador pode fazer: `pendente → paga`, `paga → pendente` (desfazer um pagamento marcado por engano), `pendente/paga → cancelada` e `cancelada → pendente` (reativar, só se o horário ainda não começou e a quadra estiver ativa). Uma reserva cancelada não vai direto para `paga`: ela é reativada como pendente e depois marcada como paga.
+
 ### Frontend
 
 Componentes funcionais com Hooks. As chamadas à API ficam em `src/services`, separadas das telas (`src/pages`) e dos componentes (`src/components`); a lógica de estado reutilizável fica em `src/hooks`. Erros de validação HTTP `422` da API são mapeados e exibidos diretamente abaixo de cada campo do formulário.
@@ -100,6 +113,8 @@ Documentação interativa completa em `http://127.0.0.1:8000/docs` com a API rod
 | PATCH | `/reservas/{id}/cancelar` | logado | cancela uma reserva (antecedência mínima de 2h) |
 | GET / POST | `/admin/quadras` | administrador | lista todas / cadastra |
 | PUT / DELETE | `/admin/quadras/{id}` | administrador | edita / inativa |
+| GET | `/admin/reservas?inicio=&fim=&quadra_id=&status=` | administrador | todas as reservas, com filtros opcionais, nome do atleta e da quadra |
+| PATCH | `/admin/reservas/{id}/status` | administrador | marca como paga, desfaz o pagamento, cancela ou reativa (veja [Status da reserva](#status-da-reserva)) |
 
 ---
 
@@ -120,7 +135,7 @@ docker compose up --build -d
 
 ## Testes
 
-O backend tem **104 testes automatizados** (pytest) cobrindo autenticação, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento e concorrência, executados contra um banco PostgreSQL de testes separado.
+O backend tem **129 testes automatizados** (pytest) cobrindo autenticação, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento, gestão de reservas pelo administrador, tratamento de erros de integridade nos repositórios e concorrência, executados contra um banco PostgreSQL de testes separado.
 
 ```bash
 cd Atv_grupo_1/backend
@@ -128,7 +143,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-Resultados, casos de teste e o detalhamento do teste de concorrência (50 pedidos simultâneos em 5 rodadas: 5 aprovados, 45 barrados, nenhuma reserva duplicada) estão em
+Resultados, casos de teste e o detalhamento dos testes de concorrência (50 pedidos simultâneos em 5 rodadas: 5 aprovados, 45 barrados, nenhuma reserva duplicada; e a reativação pelo administrador disputando o horário com 9 atletas, também com 1 só vencedor por rodada) estão em
 **[Atv_grupo_1/documents/TestExecutionReport.md](Atv_grupo_1/documents/TestExecutionReport.md)**.
 
 ---
@@ -153,8 +168,8 @@ Atv_grupo_1/
 ├── frontend/
 │   └── src/
 │       ├── components/     # componentes reutilizáveis (layout, modais, cards)
-│       ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio)
-│       ├── pages/          # telas (início, horários, minhas reservas, perfil, quadras)
+│       ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio, reservas do admin)
+│       ├── pages/          # telas (início, horários, minhas reservas, perfil, quadras, gestão de reservas)
 │       ├── services/       # chamadas à API e tratamento de erros HTTP
 │       ├── styles/         # CSS
 │       └── utils/          # formatação de datas, preços e esportes
@@ -167,7 +182,6 @@ Atv_grupo_1/
 
 | História / Item | Descrição |
 | --- | --- |
-| US07 | Gestão de reservas pelo administrador |
 | US09 | Dashboard e relatórios de ocupação e faturamento |
 | Dívida Técnica | Renovação automática de token JWT |
 | Dívida Técnica | Proteção e sincronização avançada de estado da sessão |

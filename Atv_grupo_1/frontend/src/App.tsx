@@ -8,6 +8,7 @@ import MinhasReservasPage from "./pages/MinhasReservasPage";
 import PerfilPage from "./pages/PerfilPage";
 import QuadrasAdminPage from "./pages/QuadrasAdminPage";
 import RegisterPage from "./pages/RegisterPage";
+import ReservasAdminPage from "./pages/ReservasAdminPage";
 
 export default function App() {
   const route = useHashRoute();
@@ -78,6 +79,19 @@ export default function App() {
         onLogout={sair}
       >
         <QuadrasAdminPage />
+      </AppLayout>
+    );
+  }
+
+  if (isAdmin && route === "#/reservas") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Gestão de Reservas"
+        onLogout={sair}
+      >
+        <ReservasAdminPage />
       </AppLayout>
     );
   }

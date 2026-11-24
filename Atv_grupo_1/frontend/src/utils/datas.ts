@@ -79,3 +79,22 @@ export function formatarDataExtenso(dataIso: string): string {
 export function formatarHora(hora: number): string {
   return `${String(hora).padStart(2, "0")}:00`;
 }
+
+// "2026-10-10", 7 -> "2026-10-17" (dias negativos voltam no calendário).
+export function somarDias(dataIso: string, dias: number): string {
+  const [ano, mes, dia] = dataIso.split("-").map(Number);
+  return paraDataIso(new Date(ano, mes - 1, dia + dias));
+}
+
+const formatoDataCurta = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+// "2026-10-10" -> "sáb., 10/10/2026"
+export function formatarDataCurta(dataIso: string): string {
+  const [ano, mes, dia] = dataIso.split("-").map(Number);
+  return formatoDataCurta.format(new Date(ano, mes - 1, dia));
+}
