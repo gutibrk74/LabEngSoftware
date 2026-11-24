@@ -180,7 +180,9 @@
 
 @media (max-width: 800px) {
   .app-shell {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr): a coluna não cresce com a largura do menu, que rola
+       dentro da própria barra em vez de alargar a página inteira. */
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr;
   }
 
