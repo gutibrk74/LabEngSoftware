@@ -12,6 +12,7 @@ from app.repositories.reserva_repository import ReservaRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.auth_service import AuthService
 from app.services.quadra_service import QuadraService
+from app.services.reserva_admin_service import ReservaAdminService
 from app.services.reserva_service import ReservaService
 
 
@@ -63,8 +64,19 @@ def get_reserva_service(
     )
 
 
+def get_reserva_admin_service(
+    db: Annotated[Session, Depends(get_db)],
+) -> ReservaAdminService:
+    return ReservaAdminService(
+        ReservaRepository(db), QuadraService(QuadraRepository(db))
+    )
+
+
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 QuadraServiceDep = Annotated[QuadraService, Depends(get_quadra_service)]
 ReservaServiceDep = Annotated[ReservaService, Depends(get_reserva_service)]
+ReservaAdminServiceDep = Annotated[
+    ReservaAdminService, Depends(get_reserva_admin_service)
+]
 UsuarioAtual = Annotated[Usuario, Depends(get_usuario_atual)]
 AdministradorAtual = Annotated[Usuario, Depends(get_administrador_atual)]
