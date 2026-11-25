@@ -3,7 +3,7 @@
 Aplicação web para **buscar, reservar e gerenciar quadras e campos esportivos**. O sistema atende dois perfis:
 
 - **Atleta** — busca quadras por esporte e data, consulta a grade de horários, realiza e cancela reservas e gerencia seu perfil.
-- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades) e gerencia as reservas (registra pagamentos, cancela e reativa).
+- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades) gerencia as reservas (registra pagamentos, cancela e reativa) e acompanha ocupação e faturamento no dashboard.
 
 Um dos principais objetivos técnicos é **garantir que um mesmo horário nunca seja reservado por duas pessoas**, inclusive quando os pedidos chegam ao mesmo tempo.
 
@@ -31,6 +31,7 @@ Projeto acadêmico da disciplina de **Laboratório de Engenharia de Software**.
 | **US06** — Minhas Reservas | Listagem de agendamentos futuros e histórico do atleta, com cancelamento respeitando antecedência mínima de 2 horas |
 | **US07** — Gestão de Reservas (Admin) | Listagem de todas as reservas com filtros de período, quadra e status (com nome do atleta e da quadra), registro de pagamento, cancelamento sem a antecedência mínima do atleta e reativação de reservas canceladas, protegida contra horário duplicado |
 | **US08** — Infraestrutura (Admin) | CRUD completo de quadras: cadastrar, listar, editar, inativar e reativar |
+| **US09** — Dashboard e Relatórios (Admin) | Indicadores por período: reservas por status, faturamento realizado, a receber e previsto, ocupação por quadra e geral e reservas por esporte, com cards e barras (veja [Métricas do dashboard](#métricas-do-dashboard)) |
 
 ---
 
@@ -88,6 +89,24 @@ O índice vale para **qualquer gravação que deixe uma reserva ativa**, não s�
 
 Mudanças que o administrador pode fazer: `pendente → paga`, `paga → pendente` (desfazer um pagamento marcado por engano), `pendente/paga → cancelada` e `cancelada → pendente` (reativar, só se o horário ainda não começou e a quadra estiver ativa). Uma reserva cancelada não vai direto para `paga`: ela é reativada como pendente e depois marcada como paga.
 
+### Métricas do dashboard
+
+`GET /admin/metricas?inicio=&fim=` (tela **Dashboard**, só administrador). Definições usadas:
+
+| Métrica | Definição |
+| --- | --- |
+| Período | Pela **data do jogo** (`reserva.data`), não pela data em que a reserva foi feita. Sem datas, vale o **mês atual**; `inicio` e `fim` vêm juntos, com no máximo **366 dias**. |
+| Valores | `reserva.valor`, o **preço do momento da reserva**: mudar o preço da quadra depois não altera relatórios passados. |
+| Reservas por status | Quantidade de pendentes, pagas e canceladas no período, e o total. |
+| Faturamento realizado | Soma das reservas **pagas**. Como uma reserva só fica paga pela ação do administrador (veja [Status da reserva](#status-da-reserva)), é o que foi efetivamente registrado como recebido. |
+| Faturamento a receber | Soma das reservas **pendentes**. |
+| Faturamento previsto | **Pagas + pendentes**. Reservas **canceladas nunca contam**. |
+| Ocupação por quadra | Horas reservadas (pendentes + pagas; cada reserva dura 1 hora) ÷ ((fechamento − abertura) × dias do período). Entram as quadras ativas e as **inativas que tenham reservas ativas no período** (marcadas como inativas). |
+| Ocupação geral | Soma das horas reservadas ÷ soma das horas de funcionamento das quadras listadas. Sem quadras, a taxa é 0. |
+| Por esporte | Reservas ativas (pendentes + pagas) e faturamento previsto, agrupados pelo esporte da quadra. |
+
+**Limitações conhecidas:** a ocupação usa o **horário de funcionamento atual** de cada quadra (o sistema não guarda histórico de mudanças de horário nem de quando a quadra ficou inativa), e o agrupamento por esporte usa o esporte atual da quadra.
+
 ### Frontend
 
 Componentes funcionais com Hooks. As chamadas à API ficam em `src/services`, separadas das telas (`src/pages`) e dos componentes (`src/components`); a lógica de estado reutilizável fica em `src/hooks`. Erros de validação HTTP `422` da API são mapeados e exibidos diretamente abaixo de cada campo do formulário.
@@ -115,6 +134,7 @@ Documentação interativa completa em `http://127.0.0.1:8000/docs` com a API rod
 | PUT / DELETE | `/admin/quadras/{id}` | administrador | edita / inativa |
 | GET | `/admin/reservas?inicio=&fim=&quadra_id=&status=` | administrador | todas as reservas, com filtros opcionais, nome do atleta e da quadra |
 | PATCH | `/admin/reservas/{id}/status` | administrador | marca como paga, desfaz o pagamento, cancela ou reativa (veja [Status da reserva](#status-da-reserva)) |
+| GET | `/admin/metricas?inicio=&fim=` | administrador | indicadores do período para o dashboard (veja [Métricas do dashboard](#métricas-do-dashboard)) |
 
 ---
 
@@ -135,7 +155,7 @@ docker compose up --build -d
 
 ## Testes
 
-O backend tem **129 testes automatizados** (pytest) cobrindo autenticação, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento, gestão de reservas pelo administrador, tratamento de erros de integridade nos repositórios e concorrência, executados contra um banco PostgreSQL de testes separado.
+O backend tem **135 testes automatizados** (pytest) cobrindo autenticação, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento, gestão de reservas pelo administrador, métricas do dashboard, tratamento de erros de integridade nos repositórios e concorrência, executados contra um banco PostgreSQL de testes separado.
 
 ```bash
 cd Atv_grupo_1/backend
@@ -168,8 +188,8 @@ Atv_grupo_1/
 ├── frontend/
 │   └── src/
 │       ├── components/     # componentes reutilizáveis (layout, modais, cards)
-│       ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio, reservas do admin)
-│       ├── pages/          # telas (início, horários, minhas reservas, perfil, quadras, gestão de reservas)
+│       ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio, reservas do admin, métricas)
+│       ├── pages/          # telas (início, horários, minhas reservas, perfil, quadras, gestão de reservas, dashboard)
 │       ├── services/       # chamadas à API e tratamento de erros HTTP
 │       ├── styles/         # CSS
 │       └── utils/          # formatação de datas, preços e esportes
@@ -182,7 +202,6 @@ Atv_grupo_1/
 
 | História / Item | Descrição |
 | --- | --- |
-| US09 | Dashboard e relatórios de ocupação e faturamento |
 | Dívida Técnica | Renovação automática de token JWT |
 | Dívida Técnica | Proteção e sincronização avançada de estado da sessão |
 

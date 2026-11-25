@@ -5,10 +5,10 @@
 | Item | Valor |
 | --- | --- |
 | Última execução | 24/11/2026 |
-| Versão testada | branch `feat/us07-gestao-reservas-admin` (Develop + US07 e correções de integridade nos repositórios) |
+| Versão testada | branch `feat/us09-dashboard` (Develop após a US07 + US09) |
 | Ambiente | Python 3.12.3, pytest 9.1.1, PostgreSQL 16.15 (execução local) |
 | Comando | `pytest -v` (na pasta `Atv_grupo_1/backend`) |
-| Resultado | **129 testes — 129 passaram, 0 falharam** |
+| Resultado | **135 testes — 135 passaram, 0 falharam** |
 | Estabilidade | suíte executada localmente e em container Docker sem nenhuma falha |
 
 Os testes ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreSQL próprio (`reserva_quadras_test`), criado e migrado automaticamente. O banco de desenvolvimento nunca é usado.
@@ -49,7 +49,8 @@ O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de b
 | `test_admin_reservas.py` | US07 Gestão de Reservas | 15 | listagem e filtros do admin, permissões, pagamento, cancelamento sem antecedência mínima e regras de reativação |
 | `test_repositorios.py` | US05 / US08 (integridade) | 5 | só o índice de horário (reservas) e o índice de nome (quadras) viram 409; outros erros sobem e a sessão é desfeita |
 | `test_concorrencia.py` | US05 Reserva e US07 | 14 | pedidos simultâneos para o mesmo horário, inclusive a reativação pelo administrador |
-| **Total** | | **129** | |
+| `test_metricas.py` | US09 Dashboard e Relatórios | 6 | permissões, período padrão e validação, reservas por status, faturamento, ocupação por quadra e geral e por esporte |
+| **Total** | | **135** | |
 
 Os testes de horário usam um relógio fixo (sábado, 10/10/2026, 15h30 em São Paulo), para que o resultado não dependa do dia em que a suíte é executada.
 
@@ -114,6 +115,12 @@ Reativar uma reserva cancelada a deixa ativa de novo, então ela também disputa
 ### Verificação manual da tela Gestão de Reservas
 
 A tela `#/reservas` foi exercitada no Chrome (modo headless, API e frontend apontando para o banco de testes) com 7 reservas de 2 atletas em 2 quadras. Resultado: menu e título corretos para o administrador; 7 reservas no período padrão (hoje até hoje + 7); marcar como paga e desfazer; confirmação antes de cancelar (e "Voltar" não altera nada); reativar um horário já ocupado mostra "Esse horário já foi reservado." no modal e mantém a reserva cancelada; reativar um horário livre volta para pendente; filtros de status e atalho "Hoje"; sem rolagem horizontal da página em 390 px (a tabela rola dentro do próprio contêiner); o atleta que abre `#/reservas` vai para o Início e não vê o item no menu.
+
+---
+
+### Verificação manual da tela Dashboard
+
+A tela `#/dashboard` foi exercitada no Chrome (modo headless, banco de testes) com 15 reservas no mês (pendentes, pagas e canceladas, em datas passadas e futuras) em 3 quadras, uma delas inativa. Resultado: item "Dashboard" ativo no menu do administrador; cards com os mesmos números calculados à mão (15 reservas; realizado R$ 740,00, a receber R$ 540,00, previsto R$ 1.280,00); barras de ocupação com a quadra inativa marcada e dica no hover ("6 h reservadas de 420 h de funcionamento"); atalho "Últimos 7 dias" troca o período (7 dias, 266 h disponíveis); sem rolagem horizontal da página em 390 px; o atleta que abre `#/dashboard` vai para o Início e não vê o item no menu.
 
 ---
 
@@ -186,3 +193,9 @@ A coluna "Observação" indica o arquivo e o teste automatizado correspondentes 
 | CT-61 | Reativar horário já ocupado por outra reserva — 409 "Esse horário já foi reservado.", sem alterar nenhuma das duas | ✅ | `test_admin_reservas.py::test_reativar_horario_ja_ocupado_responde_409` | @mariana-lins | 24/11/2026 |
 | CT-62 | Mesmo status — 409; reserva inexistente — 404; status inválido — 422 | ✅ | `test_admin_reservas.py::test_mesmo_status_responde_409`, `test_reserva_inexistente_e_status_invalido` | @mariana-lins | 24/11/2026 |
 | CT-63 | **Reativação pelo admin simultânea a 9 reservas de atletas (5 rodadas): 1 aceito e 9 recusados em cada, 1 só reserva ativa no banco** | ✅ | `test_concorrencia.py::test_reativacao_pelo_admin_disputa_o_horario_com_atletas` (5 rodadas) | @mariana-lins | 24/11/2026 |
+| CT-64 | Rota `/admin/metricas`: visitante 401, atleta 403 | ✅ | `test_metricas.py::test_metricas_recusam_visitante_e_atleta` | @mariana-lins | 24/11/2026 |
+| CT-65 | Sem datas, o período é o mês atual (01 a 31/10/2026, 31 dias); sem quadras e sem reservas, tudo zerado e taxa 0, sem divisão por zero | ✅ | `test_metricas.py::test_periodo_padrao_e_o_mes_atual_e_vazio_nao_divide_por_zero` | @mariana-lins | 24/11/2026 |
+| CT-66 | Quadra sem reservas no período: ocupação 0 com as horas de funcionamento contadas (14 h × 2 dias) e esporte com 0 reservas | ✅ | `test_metricas.py::test_quadra_sem_reservas_tem_ocupacao_zero` | @mariana-lins | 24/11/2026 |
+| CT-67 | Período invertido, maior que 366 dias, com só uma das datas ou mal formatado — 422; exatamente 366 dias é aceito | ✅ | `test_metricas.py::test_periodo_invalido` | @mariana-lins | 24/11/2026 |
+| CT-68 | Contagem por status e faturamento: realizado = pagas, a receber = pendentes, previsto = soma; canceladas e reservas fora do período (pela data do jogo) não contam; usa o valor do momento da reserva mesmo após mudar o preço da quadra | ✅ | `test_metricas.py::test_contagem_por_status_e_faturamento` | @mariana-lins | 24/11/2026 |
+| CT-69 | Ocupação com quadras de horários diferentes em 3 dias (3/42 h, 6/12 h e 1/36 h), quadra inativa com reserva ativa incluída e marcada, inativa só com cancelada excluída, ocupação geral (10/90 h) e reservas e faturamento previsto por esporte | ✅ | `test_metricas.py::test_ocupacao_por_quadra_geral_e_por_esporte` | @mariana-lins | 24/11/2026 |
