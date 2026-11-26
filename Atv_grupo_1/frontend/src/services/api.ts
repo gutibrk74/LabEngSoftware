@@ -223,3 +223,21 @@ export async function alterarSenha(
 
   return tratarResposta<void>(resposta);
 }
+
+// Usa exatamente o token que motivou a renovação, não um login posterior.
+export async function renovarToken(
+  token: string,
+  signal: AbortSignal,
+): Promise<LoginResponse> {
+  const resposta = await fetch(`${API_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    signal,
+  });
+
+  if (resposta.status === 401 && obterToken() === token) {
+    encerrarSessaoExpirada();
+  }
+
+  return tratarResposta<LoginResponse>(resposta);
+}

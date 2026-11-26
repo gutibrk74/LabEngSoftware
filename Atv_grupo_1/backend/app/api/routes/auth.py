@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from app.api.deps import AuthServiceDep, UsuarioAtual
+from app.api.deps import AuthServiceDep, TokenAtual, UsuarioAtual
 from app.models.usuario import Usuario
 from app.schemas.usuario import (
     AlterarSenhaRequest,
@@ -26,6 +26,11 @@ def cadastrar_usuario(dados: UsuarioCreate, service: AuthServiceDep) -> Usuario:
 @router.post("/login", response_model=TokenResponse)
 def fazer_login(dados: LoginRequest, service: AuthServiceDep) -> TokenResponse:
     return service.autenticar(dados)
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def renovar_token(token: TokenAtual, service: AuthServiceDep) -> TokenResponse:
+    return service.renovar_token(token)
 
 
 @router.get("/me", response_model=UsuarioResponse)

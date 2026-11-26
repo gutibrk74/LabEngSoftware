@@ -31,16 +31,25 @@ def get_auth_service(
     return AuthService(repositorio)
 
 
-def get_usuario_atual(
+def get_token_atual(
     credenciais: Annotated[
         HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
     ],
-    service: Annotated[AuthService, Depends(get_auth_service)],
-) -> Usuario:
+) -> str:
     if credenciais is None:
         raise NaoAutenticadoError("Autenticação necessária.")
 
-    return service.obter_usuario_do_token(credenciais.credentials)
+    return credenciais.credentials
+
+
+TokenAtual = Annotated[str, Depends(get_token_atual)]
+
+
+def get_usuario_atual(
+    token: TokenAtual,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> Usuario:
+    return service.obter_usuario_do_token(token)
 
 
 def get_administrador_atual(

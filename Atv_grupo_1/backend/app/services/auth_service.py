@@ -81,6 +81,23 @@ class AuthService:
             usuario=UsuarioResponse.model_validate(usuario),
         )
 
+    def renovar_token(self, token: str) -> TokenResponse:
+        dados_token = decodificar_token(token)
+        if dados_token is None:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        usuario = self._repositorio.buscar_por_id(dados_token.usuario_id)
+        if usuario is None or not usuario.ativo:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        return TokenResponse(
+            access_token=criar_token_acesso(
+                usuario.id, usuario.perfil, dados_token.sessao_id
+            ),
+            token_type="bearer",
+            usuario=UsuarioResponse.model_validate(usuario),
+        )
+
     def atualizar_perfil(
         self, usuario: Usuario, dados: UsuarioUpdate
     ) -> Usuario:
