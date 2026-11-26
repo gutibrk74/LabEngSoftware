@@ -133,8 +133,7 @@ export async function tratarResposta<T>(resposta: Response): Promise<T> {
   return corpo as T;
 }
 
-function cabecalhoAutenticacao(): Record<string, string> {
-  const token = obterToken();
+function cabecalhoAutenticacao(token: string | null): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -148,7 +147,8 @@ export async function fetchAutenticado(
   caminho: string,
   opcoes: OpcoesRequisicao = {},
 ): Promise<Response> {
-  const autenticacao = cabecalhoAutenticacao();
+  const token = obterToken();
+  const autenticacao = cabecalhoAutenticacao(token);
   const resposta = await fetch(`${API_URL}${caminho}`, {
     ...opcoes,
     headers: { ...opcoes.headers, ...autenticacao },
@@ -156,9 +156,9 @@ export async function fetchAutenticado(
 
   if (
     resposta.status === 401 &&
-    autenticacao.Authorization === cabecalhoAutenticacao().Authorization
+    token !== null && obterToken() === token
   ) {
-    encerrarSessaoExpirada();
+    encerrarSessaoExpirada(token);
   }
 
   return resposta;
@@ -236,7 +236,7 @@ export async function renovarToken(
   });
 
   if (resposta.status === 401 && obterToken() === token) {
-    encerrarSessaoExpirada();
+    encerrarSessaoExpirada(token);
   }
 
   return tratarResposta<LoginResponse>(resposta);
