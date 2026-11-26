@@ -1,5 +1,4 @@
-const CHAVE_TOKEN = "access_token";
-
+export const CHAVE_TOKEN = "access_token";
 export const EVENTO_SESSAO_EXPIRADA = "sessao-expirada";
 
 export function obterToken(): string | null {
@@ -10,18 +9,30 @@ export function salvarToken(token: string): void {
   localStorage.setItem(CHAVE_TOKEN, token);
 }
 
-// Lê o "exp" do JWT (em segundos) e devolve o momento da expiração em ms.
 // Só decodifica o conteúdo; quem valida a assinatura é a API.
-export function obterExpiracaoToken(token: string): number | null {
+function lerClaims(token: string): { exp?: unknown; sid?: unknown; sub?: unknown } | null {
   try {
     const conteudo = token.split(".")[1];
     const json = atob(conteudo.replace(/-/g, "+").replace(/_/g, "/"));
-    const { exp } = JSON.parse(json) as { exp?: unknown };
-
-    return typeof exp === "number" ? exp * 1000 : null;
+    return JSON.parse(json);
   } catch {
     return null;
   }
+}
+
+export function obterExpiracaoToken(token: string): number | null {
+  const exp = lerClaims(token)?.exp;
+  return typeof exp === "number" && Number.isFinite(exp) ? exp * 1000 : null;
+}
+
+// O sid permanece na renovação, mas muda a cada login, inclusive da mesma conta.
+export function mesmaSessao(anterior: string | null, atual: string | null): boolean {
+  if (!anterior || !atual) return false;
+  if (anterior === atual) return true;
+  const a = lerClaims(anterior);
+  const b = lerClaims(atual);
+  return typeof a?.sid === "string" && a.sid.length > 0 &&
+    a.sid === b?.sid && a.sub === b?.sub;
 }
 
 export function limparSessao(): void {
@@ -30,7 +41,8 @@ export function limparSessao(): void {
   localStorage.removeItem("usuario");
 }
 
-export function encerrarSessaoExpirada(): void {
+export function encerrarSessaoExpirada(tokenEsperado?: string): void {
+  if (tokenEsperado !== undefined && obterToken() !== tokenEsperado) return;
   limparSessao();
   window.dispatchEvent(new Event(EVENTO_SESSAO_EXPIRADA));
 }

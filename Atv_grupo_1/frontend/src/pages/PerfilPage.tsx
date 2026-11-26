@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import "../styles/perfil.css";
 import { ErroApi, alterarSenha, atualizarPerfil } from "../services/api";
 import type { ErrosValidacao, Usuario } from "../services/api";
+import { mesmaSessao, obterToken } from "../services/sessao";
 
 type PerfilPageProps = {
   usuario: Usuario;
@@ -73,6 +74,7 @@ export default function PerfilPage({
       return;
     }
 
+    const tokenInicio = obterToken();
     setSalvandoDados(true);
 
     try {
@@ -82,6 +84,7 @@ export default function PerfilPage({
         cidade: cidadeLimpa,
       });
 
+      if (!mesmaSessao(tokenInicio, obterToken())) return;
       onAtualizarUsuario(atualizado);
       setNome(atualizado.nome);
       setTelefone(formatarTelefone(atualizado.telefone));
