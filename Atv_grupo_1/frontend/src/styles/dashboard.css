@@ -1,0 +1,266 @@
+/* Dashboard (admin) */
+
+.dashboard-page {
+  /* Cor única das barras: não é cor de status (vermelho = cancelar/perigo).
+     Validada contra o fundo #111114 (contraste >= 3:1). */
+  --dashboard-barra: #3987e5;
+  --dashboard-trilho: #1c1c21;
+}
+
+.dashboard-cabecalho h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 28px);
+  letter-spacing: -0.5px;
+}
+
+.dashboard-cabecalho p {
+  margin: 6px 0 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.dashboard-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 12px;
+  margin: 24px 0 12px;
+  padding: 16px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.dashboard-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+.dashboard-atalho {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid #2c2c31;
+  border-radius: 999px;
+  background: transparent;
+  color: #d4d4d8;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dashboard-atalho:hover {
+  border-color: #4a4a52;
+}
+
+.dashboard-atalho:focus-visible {
+  outline: 2px solid #d1131a;
+  outline-offset: 2px;
+}
+
+.dashboard-atalho--ativo {
+  border-color: #d1131a;
+  background: rgb(209 19 26 / 15%);
+  color: #fff;
+}
+
+.dashboard-resumo {
+  min-height: 20px;
+  margin: 0 0 8px;
+  color: #b6b6bd;
+  font-size: 14px;
+}
+
+.dashboard-conteudo {
+  transition: opacity 150ms ease;
+}
+
+.dashboard-conteudo--carregando {
+  opacity: 0.55;
+}
+
+.dashboard-secao-titulo {
+  margin: 20px 0 10px;
+  color: #8a8a93;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+/* Cards de indicadores */
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-card {
+  padding: 16px 18px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.dashboard-card span {
+  display: block;
+  color: #8a8a93;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.dashboard-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #f4f4f5;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-card small {
+  display: block;
+  margin-top: 4px;
+  color: #8a8a93;
+  font-size: 12px;
+}
+
+.dashboard-card--destaque {
+  border-color: rgb(57 135 229 / 35%);
+}
+
+/* Painéis com barras */
+
+.dashboard-graficos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.dashboard-painel {
+  padding: 18px 20px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.dashboard-painel h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.dashboard-painel-nota {
+  margin: 4px 0 16px;
+  color: #8a8a93;
+  font-size: 12px;
+}
+
+.dashboard-vazio {
+  margin: 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A linha inteira é a área de hover (maior que a barra). */
+.barra {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.barra:hover {
+  background: #18181b;
+}
+
+.barra-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #e4e4e7;
+  font-size: 14px;
+}
+
+.barra-rotulo > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barra-etiqueta {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid #2c2c31;
+  border-radius: 999px;
+  color: #a1a1aa;
+  font-size: 11px;
+}
+
+.barra-trilho {
+  height: 10px;
+  border-radius: 4px;
+  background: var(--dashboard-trilho);
+}
+
+/* Ancorada à esquerda (linha de base), ponta arredondada de 4px. */
+.barra-preenchimento {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--dashboard-barra);
+}
+
+.barra-valor {
+  min-width: 56px;
+  color: #d4d4d8;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dashboard-rodape {
+  margin: 16px 0 0;
+  color: #71717a;
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-graficos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .barra {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .barra-trilho {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

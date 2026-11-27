@@ -1,6 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -83,6 +84,23 @@ class ReservaRepository:
         if status is not None:
             consulta = consulta.where(Reserva.status == status)
 
+        return list(self._db.execute(consulta).all())
+
+    def agregar_por_quadra_e_status(
+        self, inicio: date, fim: date
+    ) -> list[tuple[int, str, int, Decimal]]:
+        # Quantidade e soma dos valores (preço do momento da reserva) por
+        # quadra e status, para as reservas com o jogo dentro do período.
+        consulta = (
+            select(
+                Reserva.quadra_id,
+                Reserva.status,
+                func.count(Reserva.id),
+                func.sum(Reserva.valor),
+            )
+            .where(Reserva.data >= inicio, Reserva.data <= fim)
+            .group_by(Reserva.quadra_id, Reserva.status)
+        )
         return list(self._db.execute(consulta).all())
 
     def adicionar(self, reserva: Reserva) -> Reserva:

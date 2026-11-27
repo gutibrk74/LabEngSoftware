@@ -56,6 +56,12 @@ const ICONE_GESTAO_RESERVAS = (
   </svg>
 );
 
+const ICONE_DASHBOARD = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+  </svg>
+);
+
 const ICONE_PERFIL = (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <circle cx="12" cy="8" r="4" />
@@ -76,6 +82,7 @@ const MENU_ATLETA: ItemMenu[] = [
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/dashboard", rotulo: "Dashboard", icone: ICONE_DASHBOARD },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
   {
     rota: "#/minhas-reservas",

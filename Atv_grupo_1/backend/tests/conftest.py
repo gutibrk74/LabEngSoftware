@@ -24,6 +24,7 @@ from fastapi.testclient import TestClient
 from psycopg import sql
 from sqlalchemy import text
 
+import app.services.metricas_service as metricas_service
 import app.services.reserva_admin_service as reserva_admin_service
 import app.services.reserva_service as reserva_service
 from app.core.config import settings
@@ -40,7 +41,11 @@ from apoio import (
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
-MODULOS_COM_RELOGIO = (reserva_service, reserva_admin_service)
+MODULOS_COM_RELOGIO = (
+    reserva_service,
+    reserva_admin_service,
+    metricas_service,
+)
 
 
 def _criar_banco_de_teste() -> None:

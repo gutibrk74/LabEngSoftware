@@ -1,5 +1,6 @@
 from app.api.routes import (
     auth_router,
+    metricas_router,
     quadras_admin_router,
     quadras_router,
     reservas_admin_router,
@@ -8,6 +9,7 @@ from app.api.routes import (
 
 __all__ = [
     "auth_router",
+    "metricas_router",
     "quadras_admin_router",
     "quadras_router",
     "reservas_admin_router",

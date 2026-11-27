@@ -1,4 +1,5 @@
 import AppLayout from "./components/AppLayout";
+import DashboardPage from "./pages/DashboardPage";
 import { useHashRoute } from "./hooks/useHashRoute";
 import { useSessao } from "./hooks/useSessao";
 import HomePage from "./pages/HomePage";
@@ -79,6 +80,19 @@ export default function App() {
         onLogout={sair}
       >
         <QuadrasAdminPage />
+      </AppLayout>
+    );
+  }
+
+  if (isAdmin && route === "#/dashboard") {
+    return (
+      <AppLayout
+        usuario={usuario}
+        rotaAtual={route}
+        titulo="Dashboard"
+        onLogout={sair}
+      >
+        <DashboardPage />
       </AppLayout>
     );
   }
