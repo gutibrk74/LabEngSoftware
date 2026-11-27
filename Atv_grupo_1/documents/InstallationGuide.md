@@ -7,7 +7,7 @@ Passo a passo para rodar o sistema do zero: via **Docker Compose** (recomendado)
 ## 1. Clonar o repositório
 
 ```bash
-git clone [https://github.com/gutibrk74/LabEngSoftware.git](https://github.com/gutibrk74/LabEngSoftware.git)
+git clone https://github.com/gutibrk74/LabEngSoftware.git
 cd LabEngSoftware
 git checkout Develop
 ```
@@ -40,7 +40,7 @@ Acesse no navegador:
 # Promover um usuário cadastrado para administrador:
 docker compose exec backend python -m app.scripts.promover_admin email@exemplo.com
 
-# Rodar a suíte completa de testes automatizados (104 testes):
+# Rodar a suíte completa de testes automatizados do backend (139 testes):
 docker compose exec backend sh -c "pip install --no-cache-dir -r requirements-dev.txt && pytest"
 
 # Encerrar os containers:
@@ -56,7 +56,7 @@ docker compose down
 | Ferramenta | Versão | Para quê |
 | --- | --- | --- |
 | [Git](https://git-scm.com/) | qualquer recente | clonar o repositório |
-| [Python](https://www.python.org/downloads/) | **3.10 ou superior** | backend (FastAPI) |
+| [Python](https://www.python.org/downloads/) | **3.12 ou superior** | backend (FastAPI); é a versão da imagem Docker e a usada nos testes |
 | [Node.js](https://nodejs.org/) | **20.19+ ou 22.12+** | frontend (React + Vite) |
 | [PostgreSQL](https://www.postgresql.org/download/) | **14 ou superior** | banco de dados |
 
@@ -97,7 +97,7 @@ cp .env.example .env          # Linux/macOS
 copy .env.example .env        # Windows
 ```
 
-Preencha `DB_PASSWORD` e gere uma chave `JWT_SECRET_KEY`:
+Preencha `DB_PASSWORD` e gere uma chave `JWT_SECRET_KEY` (`ACCESS_TOKEN_EXPIRE_MINUTES` é a validade do token, em minutos; o padrão é 60, e o frontend renova o token sozinho enquanto o usuário está usando o sistema):
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
@@ -127,6 +127,25 @@ Abra **http://localhost:5173**.
 > `API_PROXY_TARGET=http://127.0.0.1:8001 npm run dev` (no PowerShell:
 > `$env:API_PROXY_TARGET="http://127.0.0.1:8001"; npm run dev`).
 
+### 3.5 Testes automatizados
+
+**Backend** (139 testes, na pasta `Atv_grupo_1/backend`, com o ambiente virtual ativado e o PostgreSQL rodando):
+
+```bash
+pip install -r requirements-dev.txt   # só na primeira vez
+pytest
+```
+
+Os testes criam e usam um banco separado, `reserva_quadras_test`, com as credenciais do `.env`; o banco de desenvolvimento não é alterado.
+
+**Frontend** (5 testes da sessão, na pasta `Atv_grupo_1/frontend`, depois do `npm install`; não precisa da API nem do banco):
+
+```bash
+npm run test:sessao
+```
+
+O resultado da última execução está em [`TestExecutionReport.md`](TestExecutionReport.md).
+
 ### Usando o GitHub Codespaces
 
 1. Rode a API e o frontend (`npm run dev`) em terminais do codespace.
@@ -138,10 +157,10 @@ Abra **http://localhost:5173**.
 ## 4. Primeiro acesso
 
 1. Na tela de login, clique em **Crie aqui** e cadastre um usuário. Todo cadastro feito pela tela é um **atleta**.
-2. Para ter um **administrador** (que gerencia as quadras), promova um usuário já cadastrado:
+2. Para ter um **administrador** (que gerencia quadras e reservas e acompanha o dashboard), promova um usuário já cadastrado:
    - **Com Docker:** `docker compose exec backend python -m app.scripts.promover_admin email@exemplo.com`
    - **Local:** `python -m app.scripts.promover_admin email@exemplo.com`
-3. Entre com o administrador e cadastre as quadras no menu **Quadras**.
+3. Entre com o administrador e cadastre as quadras no menu **Quadras**. O menu do administrador também tem **Reservas** (consulta, registro de pagamento, cancelamento e reativação) e **Dashboard** (ocupação e faturamento por período).
 4. Entre com o atleta para buscar quadras no **Início**, reservar em **Horários**, gerenciar em **Minhas Reservas** e editar seus dados em **Meu Perfil**.
 
 ---
@@ -155,3 +174,4 @@ Abra **http://localhost:5173**.
 | `relation "quadras" does not exist` (ou outra tabela) | migrações não aplicadas | `alembic upgrade head` |
 | `NetworkError` / `Failed to fetch` na tela | a API não está rodando ou está em outra porta | confira se a API responde em `/health`; se estiver em outra porta, use `API_PROXY_TARGET` |
 | `address already in use` na porta 8000 ou 5173 | já existe outro processo usando a porta | feche o processo anterior ou pare containers antigos |
+| A sessão expira depois de 60 minutos mesmo com o sistema em uso | o site foi aberto por um endereço HTTP que não é `localhost` (por exemplo, o IP da máquina na rede); fora de HTTPS ou `localhost` o navegador não oferece a API Web Locks, e o frontend não renova o token para não arriscar duas renovações ao mesmo tempo | abra por `http://localhost:5173` ou por um endereço HTTPS (como o do Codespaces) |
