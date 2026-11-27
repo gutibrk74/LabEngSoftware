@@ -4,14 +4,16 @@
 
 | Item | Valor |
 | --- | --- |
-| Última execução | 24/11/2026 |
-| Versão testada | branch `feat/us09-dashboard` (Develop após a US07 + US09) |
-| Ambiente | Python 3.12.3, pytest 9.1.1, PostgreSQL 16.15 (execução local) |
-| Comando | `pytest -v` (na pasta `Atv_grupo_1/backend`) |
-| Resultado | **135 testes — 135 passaram, 0 falharam** |
-| Estabilidade | suíte executada localmente e em container Docker sem nenhuma falha |
+| Última execução | 27/11/2026 |
+| Versão testada | branch `docs/fechamento-sprint-2` (Develop ao fim da Sprint 2: US01 a US09, renovação do token e sincronização da sessão; API versão 1.0.0) |
+| Ambiente | Backend: Python 3.12.3, pytest 9.1.1, PostgreSQL 16.15. Frontend: Node.js 24.21.0, TypeScript 6.0.3 (execução local) |
+| Comandos | `pytest -v` (na pasta `Atv_grupo_1/backend`) e `npm run test:sessao` (na pasta `Atv_grupo_1/frontend`) |
+| Resultado | **144 testes — 144 passaram, 0 falharam** (139 do backend + 5 de sessão do frontend) |
+| Estabilidade | as duas suítes completas executadas localmente, sem nenhuma falha |
 
-Os testes ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreSQL próprio (`reserva_quadras_test`), criado e migrado automaticamente. O banco de desenvolvimento nunca é usado.
+Os testes do backend ficam em `Atv_grupo_1/backend/tests/` e rodam contra um banco PostgreSQL próprio (`reserva_quadras_test`), criado e migrado automaticamente. O banco de desenvolvimento nunca é usado.
+
+Os testes de sessão do frontend ficam em `Atv_grupo_1/frontend/tests/sessao.test.cjs`. Eles usam o executor de testes nativo do Node.js (`node:test`) e o TypeScript já instalado pelo projeto, sem dependências novas: o teste compila `services/sessao.ts` e `services/renovacaoSessao.ts` numa pasta temporária e simula `localStorage`, `window` e a API Web Locks.
 
 ---
 
@@ -33,6 +35,14 @@ pytest            # resumo
 pytest -v -s      # cada teste + o resultado das rodadas de concorrência
 ```
 
+### Testes de sessão do frontend
+
+```bash
+cd Atv_grupo_1/frontend
+npm install           # só na primeira vez
+npm run test:sessao
+```
+
 O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de banco: `TEST_DB_NAME=meu_banco_test pytest` (o nome precisa terminar em `_test`).
 
 ---
@@ -42,7 +52,7 @@ O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de b
 | Arquivo | História | Testes | O que é verificado |
 | --- | --- | :---: | --- |
 | `test_saude.py` | — | 2 | API no ar e uso do banco de testes |
-| `test_auth.py` | US01 Autenticação e US02 Perfil | 25 | cadastro, CPF ASCII, login, validação do token JWT, edição de perfil e troca de senha |
+| `test_auth.py` | US01 Autenticação e US02 Perfil | 29 | cadastro, CPF ASCII, login, validação do token JWT, renovação do token (`/auth/refresh`), edição de perfil e troca de senha |
 | `test_quadras.py` | US08 Infraestrutura | 22 | CRUD de quadras, validações, nome único e permissões |
 | `test_busca.py` | US03 Busca | 13 | filtros por esporte e por data |
 | `test_reservas.py` | US04 Grade, US05 Reserva e US06 Minhas Reservas | 33 | grade de horários, regras da reserva, listagem do atleta, cancelamento com antecedência e restrições do banco |
@@ -50,7 +60,9 @@ O banco de testes usa as mesmas credenciais do `.env`. Para usar outro nome de b
 | `test_repositorios.py` | US05 / US08 (integridade) | 5 | só o índice de horário (reservas) e o índice de nome (quadras) viram 409; outros erros sobem e a sessão é desfeita |
 | `test_concorrencia.py` | US05 Reserva e US07 | 14 | pedidos simultâneos para o mesmo horário, inclusive a reativação pelo administrador |
 | `test_metricas.py` | US09 Dashboard e Relatórios | 6 | permissões, período padrão e validação, reservas por status, faturamento, ocupação por quadra e geral e por esporte |
-| **Total** | | **135** | |
+| **Total do backend** | | **139** | |
+| `frontend/tests/sessao.test.cjs` | US01 Autenticação (sessão no frontend) | 5 | janela de renovação, mesma sessão × novo login, 401 atrasado, trava entre abas e ausência de Web Locks |
+| **Total geral** | | **144** | |
 
 Os testes de horário usam um relógio fixo (sábado, 10/10/2026, 15h30 em São Paulo), para que o resultado não dependa do dia em que a suíte é executada.
 
@@ -199,3 +211,12 @@ A coluna "Observação" indica o arquivo e o teste automatizado correspondentes 
 | CT-67 | Período invertido, maior que 366 dias, com só uma das datas ou mal formatado — 422; exatamente 366 dias é aceito | ✅ | `test_metricas.py::test_periodo_invalido` | @mariana-lins | 24/11/2026 |
 | CT-68 | Contagem por status e faturamento: realizado = pagas, a receber = pendentes, previsto = soma; canceladas e reservas fora do período (pela data do jogo) não contam; usa o valor do momento da reserva mesmo após mudar o preço da quadra | ✅ | `test_metricas.py::test_contagem_por_status_e_faturamento` | @mariana-lins | 24/11/2026 |
 | CT-69 | Ocupação com quadras de horários diferentes em 3 dias (3/42 h, 6/12 h e 1/36 h), quadra inativa com reserva ativa incluída e marcada, inativa só com cancelada excluída, ocupação geral (10/90 h) e reservas e faturamento previsto por esporte | ✅ | `test_metricas.py::test_ocupacao_por_quadra_geral_e_por_esporte` | @mariana-lins | 24/11/2026 |
+| CT-70 | Renovação (`POST /auth/refresh`) de um token perto de expirar devolve um token novo da mesma sessão (mesmo `sub` e `sid`), com expiração maior, os dados do usuário, e o token novo é aceito em `/auth/me` | ✅ | `test_auth.py::test_refresh_renova_token_valido` | @mariana-lins | 27/11/2026 |
+| CT-71 | Renovação recusa token ausente, malformado, expirado ou assinado com outra chave — 401 | ✅ | `test_auth.py::test_refresh_recusa_token_invalido_ou_expirado` | @mariana-lins | 27/11/2026 |
+| CT-72 | Renovação recusa usuário inativado — 401 | ✅ | `test_auth.py::test_refresh_recusa_usuario_inativo` | @mariana-lins | 27/11/2026 |
+| CT-73 | Renovação usa o perfil atual do banco (usuário promovido a administrador recebe o perfil novo) | ✅ | `test_auth.py::test_refresh_usa_perfil_atual_do_banco` | @mariana-lins | 27/11/2026 |
+| CT-74 | Frontend renova só na janela final do token, com atividade recente e aba visível; não renova token expirado, fora da janela ou inválido | ✅ | `sessao.test.cjs` — "renova só na janela, com atividade recente e aba visível" | @mariana-lins | 27/11/2026 |
+| CT-75 | Frontend distingue a renovação da mesma sessão (mesmo `sid` e usuário) de um novo login, inclusive da mesma conta | ✅ | `sessao.test.cjs` — "distingue renovação de um novo login da mesma conta" | @mariana-lins | 27/11/2026 |
+| CT-76 | 401 ou expiração de um token anterior não remove o token novo nem dispara o fim da sessão; o do token atual, sim | ✅ | `sessao.test.cjs` — "401/expiração do token anterior não remove token novo" | @mariana-lins | 27/11/2026 |
+| CT-77 | Duas tentativas simultâneas de renovação (Web Locks) executam uma só renovação, e o token antigo não é renovado de novo | ✅ | `sessao.test.cjs` — "duas tentativas simultâneas não executam duas renovações e token antigo não é reutilizado" | @mariana-lins | 27/11/2026 |
+| CT-78 | Sem suporte a Web Locks, o frontend não inicia renovação concorrente insegura e mantém o token | ✅ | `sessao.test.cjs` — "sem Web Locks não inicia renovação concorrente insegura" | @mariana-lins | 27/11/2026 |
