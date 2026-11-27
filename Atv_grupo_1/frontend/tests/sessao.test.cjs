@@ -10,7 +10,7 @@ const temporario = mkdtempSync(join(tmpdir(), 'reserva-sessao-'));
 try {
   execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'),
     '--target', 'es2022', '--module', 'commonjs', '--lib', 'es2022,dom',
-    '--strict', '--skipLibCheck', '--outDir', temporario,
+    '--strict', '--skipLibCheck', '--ignoreConfig', '--outDir', temporario,
     'src/services/sessao.ts', 'src/services/renovacaoSessao.ts'], { stdio: 'inherit' });
 } catch (erro) {
   rmSync(temporario, { recursive: true, force: true });
