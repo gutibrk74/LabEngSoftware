@@ -3,7 +3,7 @@
 Aplicação web para **buscar, reservar e gerenciar quadras e campos esportivos**. O sistema atende dois perfis:
 
 - **Atleta** — busca quadras por esporte e data, consulta a grade de horários, realiza e cancela reservas e gerencia seu perfil.
-- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades) gerencia as reservas (registra pagamentos, cancela e reativa) e acompanha ocupação e faturamento no dashboard.
+- **Administrador** — cadastra e mantém as quadras do complexo (horários de funcionamento, preços e comodidades), gerencia as reservas (registra pagamentos, cancela e reativa) e acompanha ocupação e faturamento no dashboard.
 
 Um dos principais objetivos técnicos é **garantir que um mesmo horário nunca seja reservado por duas pessoas**, inclusive quando os pedidos chegam ao mesmo tempo.
 
@@ -23,7 +23,7 @@ Projeto acadêmico da disciplina de **Laboratório de Engenharia de Software**.
 
 | História | Funcionalidade |
 | --- | --- |
-| **US01** — Autenticação | Cadastro (com validação estrita de CPF ASCII) e login com JWT, perfis de atleta e administrador, sessão encerrada automaticamente quando o token expira |
+| **US01** — Autenticação | Cadastro (com validação estrita de CPF ASCII) e login com JWT, perfis de atleta e administrador, renovação automática do token enquanto o usuário está ativo e sessão sincronizada entre abas (veja [Sessão e renovação do token](#sessão-e-renovação-do-token)) |
 | **US02** — Perfil do Atleta | Visualização de dados cadastrais, edição de nome, telefone e cidade e alteração de senha com validação da senha atual |
 | **US03** — Busca | Filtro de quadras por esporte e por data (mostra só quadras com horário livre no dia) |
 | **US04** — Grade de horários | Grade por quadra e por dia, cruzando o horário de funcionamento com as reservas existentes |
@@ -107,6 +107,24 @@ Mudanças que o administrador pode fazer: `pendente → paga`, `paga → pendent
 
 **Limitações conhecidas:** a ocupação usa o **horário de funcionamento atual** de cada quadra (o sistema não guarda histórico de mudanças de horário nem de quando a quadra ficou inativa), e o agrupamento por esporte usa o esporte atual da quadra.
 
+### Sessão e renovação do token
+
+**Backend — `POST /auth/refresh`.** Recebe no cabeçalho `Authorization` um token **ainda válido** (assinatura correta e não expirado), confere se o usuário **continua existindo e ativo** e devolve um token novo com validade cheia (`ACCESS_TOKEN_EXPIRE_MINUTES`, 60 minutos por padrão) e os dados atuais do usuário, inclusive o perfil lido do banco. Sem token, a resposta é `401 — Autenticação necessária.`; token inválido ou expirado, ou usuário inativo, recebe `401 — Sessão inválida ou expirada.` Cada token carrega um `sid` (identificador da sessão, criado a cada login e mantido nas renovações) e um `jti` (identificador único do token).
+
+**Frontend — quando renova** (`useSessao` + `services/renovacaoSessao.ts`). A sessão é verificada a cada 15 segundos, quando a aba volta a ficar visível e a cada interação do usuário (clique, toque, tecla ou rolagem). O token só é renovado quando as três condições valem juntas:
+
+- faltam **5 minutos ou menos** para ele expirar;
+- houve **atividade do usuário nos últimos 5 minutos**;
+- a **aba está visível**.
+
+Sem atividade, o token não é renovado e a sessão expira normalmente; um token já expirado encerra a sessão e leva para o login.
+
+**Trava entre abas (Web Locks).** A renovação roda dentro de `navigator.locks.request("reserva-gavea:renovacao-jwt", { ifAvailable: true })`: se outra aba já está renovando, esta não tenta de novo, e quem obtém a trava confere outra vez se o token ainda é o mesmo antes de chamar a API. Se o navegador não oferece Web Locks (por exemplo, fora de HTTPS ou `localhost`), o frontend não renova, para não arriscar duas renovações ao mesmo tempo, e a sessão expira no horário normal.
+
+**Sincronização entre abas.** O token fica no `localStorage`; as outras abas percebem a troca pelo evento `storage`. Uma renovação da mesma sessão (mesmo `sid` e mesmo usuário) mantém a tela, os modais e os formulários abertos; um novo login (outro `sid` ou outra conta) recarrega os dados do usuário; sair em uma aba leva todas para o login.
+
+**Proteção contra 401 atrasado.** Cada requisição autenticada guarda o token com que foi enviada. Se ela responder `401`, a sessão só é encerrada quando aquele **ainda é o token atual**; a resposta atrasada de um pedido feito com um token antigo (já renovado ou de um login anterior) é ignorada e não derruba a sessão nova. Pelo mesmo motivo, a tela Meu Perfil descarta a resposta de um salvamento se a sessão mudou enquanto o pedido estava em andamento.
+
 ### Frontend
 
 Componentes funcionais com Hooks. As chamadas à API ficam em `src/services`, separadas das telas (`src/pages`) e dos componentes (`src/components`); a lógica de estado reutilizável fica em `src/hooks`. Erros de validação HTTP `422` da API são mapeados e exibidos diretamente abaixo de cada campo do formulário.
@@ -121,6 +139,7 @@ Documentação interativa completa em `http://127.0.0.1:8000/docs` com a API rod
 | --- | --- | --- | --- |
 | POST | `/auth/register` | público | cadastro de atleta |
 | POST | `/auth/login` | público | login (retorna o token JWT) |
+| POST | `/auth/refresh` | logado (token ainda válido) | gera um token novo para a mesma sessão, se o usuário continua ativo (veja [Sessão e renovação do token](#sessão-e-renovação-do-token)) |
 | GET | `/auth/me` | logado | dados do usuário logado |
 | PATCH | `/auth/me` | logado | atualiza nome, telefone e cidade do usuário logado |
 | PATCH | `/auth/me/senha` | logado | altera a senha do usuário logado |
@@ -135,6 +154,7 @@ Documentação interativa completa em `http://127.0.0.1:8000/docs` com a API rod
 | GET | `/admin/reservas?inicio=&fim=&quadra_id=&status=` | administrador | todas as reservas, com filtros opcionais, nome do atleta e da quadra |
 | PATCH | `/admin/reservas/{id}/status` | administrador | marca como paga, desfaz o pagamento, cancela ou reativa (veja [Status da reserva](#status-da-reserva)) |
 | GET | `/admin/metricas?inicio=&fim=` | administrador | indicadores do período para o dashboard (veja [Métricas do dashboard](#métricas-do-dashboard)) |
+| GET | `/health` | público | verifica se a API está no ar |
 
 ---
 
@@ -155,12 +175,19 @@ docker compose up --build -d
 
 ## Testes
 
-O backend tem **135 testes automatizados** (pytest) cobrindo autenticação, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento, gestão de reservas pelo administrador, métricas do dashboard, tratamento de erros de integridade nos repositórios e concorrência, executados contra um banco PostgreSQL de testes separado.
+O backend tem **139 testes automatizados** (pytest) cobrindo autenticação, renovação do token, edição de perfil, CRUD de quadras, busca, grade de horários, regras de reserva, cancelamento, gestão de reservas pelo administrador, métricas do dashboard, tratamento de erros de integridade nos repositórios e concorrência, executados contra um banco PostgreSQL de testes separado.
 
 ```bash
 cd Atv_grupo_1/backend
 pip install -r requirements-dev.txt
 pytest
+```
+
+O frontend tem **5 testes da sessão** (renovação do token, trava entre abas e proteção contra 401 atrasado), escritos com o executor de testes do próprio Node.js, sem dependências novas:
+
+```bash
+cd Atv_grupo_1/frontend
+npm run test:sessao
 ```
 
 Resultados, casos de teste e o detalhamento dos testes de concorrência (50 pedidos simultâneos em 5 rodadas: 5 aprovados, 45 barrados, nenhuma reserva duplicada; e a reativação pelo administrador disputando o horário com 9 atletas, também com 1 só vencedor por rodada) estão em
@@ -186,24 +213,22 @@ Atv_grupo_1/
 │   │   └── services/       # regras de negócio
 │   └── tests/              # testes automatizados (pytest)
 ├── frontend/
-│   └── src/
-│       ├── components/     # componentes reutilizáveis (layout, modais, cards)
-│       ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio, reservas do admin, métricas)
-│       ├── pages/          # telas (início, horários, minhas reservas, perfil, quadras, gestão de reservas, dashboard)
-│       ├── services/       # chamadas à API e tratamento de erros HTTP
-│       ├── styles/         # CSS
-│       └── utils/          # formatação de datas, preços e esportes
+│   ├── src/
+│   │   ├── components/     # componentes reutilizáveis (layout, modais, cards)
+│   │   ├── hooks/          # lógica de estado (sessão, quadras, grade, relógio, reservas do admin, métricas)
+│   │   ├── pages/          # telas (login, cadastro, início, horários, minhas reservas, perfil, quadras, gestão de reservas, dashboard)
+│   │   ├── services/       # chamadas à API, sessão e renovação do token
+│   │   ├── styles/         # CSS
+│   │   └── utils/          # formatação de datas, preços e esportes
+│   └── tests/              # testes da sessão (npm run test:sessao)
 └── documents/              # DER, guia de instalação e relatório de testes
 ```
 
 ---
 
-## Próximas etapas
+## Status do projeto
 
-| História / Item | Descrição |
-| --- | --- |
-| Dívida Técnica | Renovação automática de token JWT |
-| Dívida Técnica | Proteção e sincronização avançada de estado da sessão |
+Todas as histórias de usuário (**US01 a US09**) e as dívidas técnicas das Sprints 1 e 2 (**renovação automática do token JWT** e **proteção e sincronização do estado da sessão entre abas**) foram entregues.
 
 ---
 
