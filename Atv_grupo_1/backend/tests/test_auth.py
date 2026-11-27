@@ -239,3 +239,127 @@ def test_login_do_admin_informa_o_perfil(
     )
 
     assert resposta.json()["usuario"]["perfil"] == "administrador"
+
+
+def test_cadastro_recusa_cpf_com_digitos_unicode(client: TestClient) -> None:
+    client.post("/auth/register", json=dados_cadastro("a@a.com", "12345678901"))
+
+    for cpf_unicode in ("１２３４５６７８９０１", "1234567890١"):
+        resposta = client.post(
+            "/auth/register", json=dados_cadastro("b@b.com", cpf_unicode)
+        )
+        assert resposta.status_code == 422
+        assert resposta.json()["detail"] == "CPF deve conter apenas dígitos ASCII."
+
+def test_atualizar_perfil_do_atleta(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    resposta = client.patch(
+        "/auth/me",
+        json={
+            "nome": "  Gustavo Morais Atualizado  ",
+            "telefone": "(12) 99123-4567",
+            "cidade": "São José dos Campos",
+        },
+        headers=atleta,
+    )
+
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert dados["nome"] == "Gustavo Morais Atualizado"
+    assert dados["telefone"] == "12991234567"
+    assert dados["cidade"] == "São José dos Campos"
+
+
+def test_atualizar_perfil_recusa_telefone_invalido(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    resposta = client.patch(
+        "/auth/me",
+        json={
+            "nome": "Atleta Teste",
+            "telefone": "123456789",
+            "cidade": "Caçapava",
+        },
+        headers=atleta,
+    )
+
+    assert resposta.status_code == 422
+
+
+def test_alterar_senha_do_atleta(
+    client: TestClient, atleta: Cabecalho
+) -> None:
+    erro_atual = client.patch(
+        "/auth/me/senha",
+        json={
+            "senha_atual": "senha_errada",
+            "nova_senha": "novaSenha123",
+            "confirmar_nova_senha": "novaSenha123",
+        },
+        headers=atleta,
+    )
+    assert erro_atual.status_code == 422
+    assert erro_atual.json()["detail"] == "Senha atual incorreta."
+
+    ok = client.patch(
+        "/auth/me/senha",
+        json={
+            "senha_atual": "senha1234",
+            "nova_senha": "novaSenha123",
+            "confirmar_nova_senha": "novaSenha123",
+        },
+        headers=atleta,
+    )
+    assert ok.status_code == 204
+
+    login_novo = client.post(
+        "/auth/login",
+        json={"email": "atleta@teste.com", "senha": "novaSenha123"},
+    )
+    assert login_novo.status_code == 200
+
+def test_refresh_renova_token_valido(client: TestClient, atleta: Cabecalho) -> None:
+    original = atleta["Authorization"].split()[1]
+    dados = jwt.get_unverified_claims(original)
+    dados["exp"] = datetime.now(timezone.utc) + timedelta(minutes=4)
+    quase_expirado = jwt.encode(
+        dados, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
+    resposta = client.post(
+        "/auth/refresh", headers={"Authorization": f"Bearer {quase_expirado}"}
+    )
+    assert resposta.status_code == 200
+    novo = resposta.json()["access_token"]
+    claims = jwt.decode(novo, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    assert novo != original
+    assert claims["sub"] == dados["sub"]
+    assert claims["sid"] == dados["sid"]
+    assert claims["exp"] > jwt.get_unverified_claims(quase_expirado)["exp"]
+    assert resposta.json()["usuario"]["email"] == "atleta@teste.com"
+    assert client.get("/auth/me", headers={"Authorization": f"Bearer {novo}"}).status_code == 200
+
+
+def test_refresh_recusa_token_invalido_ou_expirado(client: TestClient, atleta: Cabecalho) -> None:
+    dados = jwt.get_unverified_claims(atleta["Authorization"].split()[1])
+    dados["exp"] = datetime.now(timezone.utc) - timedelta(minutes=1)
+    expirado = jwt.encode(dados, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    falso = jwt.encode(dados, "outra-chave", algorithm=settings.JWT_ALGORITHM)
+    for headers in ({}, {"Authorization": "Bearer lixo"},
+                    {"Authorization": f"Bearer {expirado}"},
+                    {"Authorization": f"Bearer {falso}"}):
+        assert client.post("/auth/refresh", headers=headers).status_code == 401
+
+
+def test_refresh_recusa_usuario_inativo(client: TestClient, atleta: Cabecalho) -> None:
+    with SessionLocal() as db:
+        db.query(Usuario).filter_by(email="atleta@teste.com").update({"ativo": False})
+        db.commit()
+    assert client.post("/auth/refresh", headers=atleta).status_code == 401
+
+
+def test_refresh_usa_perfil_atual_do_banco(client: TestClient, atleta: Cabecalho) -> None:
+    assert promover("atleta@teste.com") == 0
+    resposta = client.post("/auth/refresh", headers=atleta)
+    assert resposta.status_code == 200
+    assert resposta.json()["usuario"]["perfil"] == "administrador"

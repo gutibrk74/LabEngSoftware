@@ -24,6 +24,8 @@ from fastapi.testclient import TestClient
 from psycopg import sql
 from sqlalchemy import text
 
+import app.services.metricas_service as metricas_service
+import app.services.reserva_admin_service as reserva_admin_service
 import app.services.reserva_service as reserva_service
 from app.core.config import settings
 from app.db.session import engine
@@ -38,6 +40,12 @@ from apoio import (
 )
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+MODULOS_COM_RELOGIO = (
+    reserva_service,
+    reserva_admin_service,
+    metricas_service,
+)
 
 
 def _criar_banco_de_teste() -> None:
@@ -99,7 +107,9 @@ def relogio(monkeypatch: pytest.MonkeyPatch) -> Callable[..., None]:
         def agora() -> datetime:
             return fila.pop(0) if len(fila) > 1 else fila[0]
 
-        monkeypatch.setattr(reserva_service, "agora", agora)
+        # Todo serviço que lê o relógio precisa estar nesta lista.
+        for modulo in MODULOS_COM_RELOGIO:
+            monkeypatch.setattr(modulo, "agora", agora)
 
     fixar(AGORA_PADRAO)
     return fixar

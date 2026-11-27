@@ -1,4 +1,5 @@
 import { API_URL, fetchAutenticado, tratarResposta } from "./api";
+import type { TipoEsporte } from "./quadras";
 
 export type HorarioGrade = {
   horario: number;
@@ -22,6 +23,11 @@ export type Reserva = {
   valor: number;
   status: StatusReserva;
   criado_em: string;
+};
+
+export type ReservaAtleta = Reserva & {
+  quadra_nome: string;
+  quadra_esporte: TipoEsporte;
 };
 
 export type ReservaPayload = {
@@ -48,6 +54,18 @@ export async function criarReserva(dados: ReservaPayload): Promise<Reserva> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados),
+  });
+  return tratarResposta<Reserva>(resposta);
+}
+
+export async function listarMinhasReservas(): Promise<ReservaAtleta[]> {
+  const resposta = await fetchAutenticado("/reservas/minhas");
+  return tratarResposta<ReservaAtleta[]>(resposta);
+}
+
+export async function cancelarReserva(reservaId: number): Promise<Reserva> {
+  const resposta = await fetchAutenticado(`/reservas/${reservaId}/cancelar`, {
+    method: "PATCH",
   });
   return tratarResposta<Reserva>(resposta);
 }

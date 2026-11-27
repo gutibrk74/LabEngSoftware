@@ -42,15 +42,56 @@ const ICONE_HORARIOS = (
   </svg>
 );
 
+const ICONE_MINHAS_RESERVAS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+
+const ICONE_GESTAO_RESERVAS = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3" />
+  </svg>
+);
+
+const ICONE_DASHBOARD = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+  </svg>
+);
+
+const ICONE_PERFIL = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c1.8-3.6 5-5.5 8-5.5s6.2 1.9 8 5.5" />
+  </svg>
+);
+
 const MENU_ATLETA: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
+  {
+    rota: "#/minhas-reservas",
+    rotulo: "Minhas Reservas",
+    icone: ICONE_MINHAS_RESERVAS,
+  },
+  { rota: "#/perfil", rotulo: "Meu Perfil", icone: ICONE_PERFIL },
 ];
 
 const MENU_ADMIN: ItemMenu[] = [
   { rota: "#/inicio", rotulo: "Início", icone: ICONE_INICIO },
+  { rota: "#/dashboard", rotulo: "Dashboard", icone: ICONE_DASHBOARD },
   { rota: "#/horarios", rotulo: "Horários", icone: ICONE_HORARIOS },
+  {
+    rota: "#/minhas-reservas",
+    rotulo: "Minhas Reservas",
+    icone: ICONE_MINHAS_RESERVAS,
+  },
+  { rota: "#/reservas", rotulo: "Reservas", icone: ICONE_GESTAO_RESERVAS },
   { rota: "#/quadras", rotulo: "Quadras", icone: ICONE_QUADRAS },
+  { rota: "#/perfil", rotulo: "Meu Perfil", icone: ICONE_PERFIL },
 ];
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {

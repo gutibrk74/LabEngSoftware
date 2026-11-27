@@ -1,6 +1,11 @@
 from datetime import date, datetime, timedelta
 
-from app.core.exceptions import ConflitoError, DadosInvalidosError
+from app.core.exceptions import (
+    AcessoNegadoError,
+    ConflitoError,
+    DadosInvalidosError,
+    NaoEncontradoError,
+)
 from app.core.tempo import agora
 from app.models.quadra import Quadra, TipoEsporte
 from app.models.reserva import Reserva
@@ -9,12 +14,15 @@ from app.repositories.reserva_repository import ReservaRepository
 from app.schemas.reserva import (
     GradeHorariosResponse,
     HorarioGrade,
+    ReservaAtletaResponse,
     ReservaCreate,
 )
 from app.services.quadra_service import QuadraService
 
 # Até quantos dias à frente é possível consultar e reservar.
 DIAS_ANTECEDENCIA_MAXIMA = 30
+# Prazo mínimo antes do início do jogo para o atleta cancelar.
+HORAS_ANTECEDENCIA_CANCELAMENTO = 2
 
 
 class ReservaService:
@@ -69,6 +77,26 @@ class ReservaService:
             )
         ]
 
+    def listar_minhas_reservas(
+        self, usuario: Usuario
+    ) -> list[ReservaAtletaResponse]:
+        registros = self._repositorio.listar_por_usuario(usuario.id)
+
+        return [
+            ReservaAtletaResponse(
+                id=reserva.id,
+                quadra_id=reserva.quadra_id,
+                quadra_nome=quadra_nome,
+                quadra_esporte=quadra_esporte,
+                data=reserva.data,
+                horario=reserva.horario,
+                valor=float(reserva.valor),
+                status=reserva.status,
+                criado_em=reserva.criado_em,
+            )
+            for reserva, quadra_nome, quadra_esporte in registros
+        ]
+
     def reservar(self, usuario: Usuario, dados: ReservaCreate) -> Reserva:
         quadra = self._quadra_service.obter(dados.quadra_id)
         # Uma única leitura do relógio: se a meia-noite passar no meio do
@@ -100,6 +128,44 @@ class ReservaService:
         # O índice único do banco garante que só um pedido fica com o
         # horário, mesmo que dois cheguem ao mesmo tempo.
         return self._repositorio.adicionar(reserva)
+
+    def cancelar_reserva(self, usuario: Usuario, reserva_id: int) -> Reserva:
+        reserva = self._repositorio.buscar_por_id(reserva_id)
+
+        if reserva is None:
+            raise NaoEncontradoError("Reserva não encontrada.")
+
+        if reserva.usuario_id != usuario.id:
+            raise AcessoNegadoError(
+                "Você não tem permissão para cancelar esta reserva."
+            )
+
+        if reserva.status == "cancelada":
+            raise ConflitoError("Esta reserva já está cancelada.")
+
+        momento = agora()
+        inicio_reserva = datetime(
+            reserva.data.year,
+            reserva.data.month,
+            reserva.data.day,
+            reserva.horario,
+            tzinfo=momento.tzinfo,
+        )
+
+        if inicio_reserva <= momento:
+            raise DadosInvalidosError(
+                "Não é possível cancelar uma reserva que já começou ou passou."
+            )
+
+        if inicio_reserva - momento < timedelta(
+            hours=HORAS_ANTECEDENCIA_CANCELAMENTO
+        ):
+            raise DadosInvalidosError(
+                "O cancelamento deve ser feito com pelo menos "
+                f"{HORAS_ANTECEDENCIA_CANCELAMENTO} horas de antecedência."
+            )
+
+        return self._repositorio.cancelar(reserva)
 
     def _ja_comecou(self, data: date, hora: int, momento: datetime) -> bool:
         hoje = momento.date()

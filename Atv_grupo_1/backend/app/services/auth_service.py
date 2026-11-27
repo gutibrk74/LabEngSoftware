@@ -13,15 +13,21 @@ from app.core.security import (
 from app.models.usuario import PERFIL_ADMINISTRADOR, Usuario
 from app.repositories.usuario_repository import UsuarioRepository
 from app.schemas.usuario import (
+    AlterarSenhaRequest,
     LoginRequest,
     TokenResponse,
     UsuarioCreate,
     UsuarioResponse,
+    UsuarioUpdate,
 )
 
 
 def normalizar_apenas_digitos(valor: str) -> str:
-    return "".join(caractere for caractere in valor if caractere.isdigit())
+    return "".join(
+        caractere
+        for caractere in valor
+        if caractere.isascii() and caractere.isdigit()
+    )
 
 
 class AuthService:
@@ -29,6 +35,9 @@ class AuthService:
         self._repositorio = repositorio
 
     def cadastrar(self, dados: UsuarioCreate) -> Usuario:
+        if not dados.cpf.isascii():
+            raise DadosInvalidosError("CPF deve conter apenas dígitos ASCII.")
+
         email = str(dados.email).strip().lower()
         cpf = normalizar_apenas_digitos(dados.cpf)
         telefone = normalizar_apenas_digitos(dados.telefone)
@@ -71,6 +80,62 @@ class AuthService:
             token_type="bearer",
             usuario=UsuarioResponse.model_validate(usuario),
         )
+
+    def renovar_token(self, token: str) -> TokenResponse:
+        dados_token = decodificar_token(token)
+        if dados_token is None:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        usuario = self._repositorio.buscar_por_id(dados_token.usuario_id)
+        if usuario is None or not usuario.ativo:
+            raise NaoAutenticadoError("Sessão inválida ou expirada.")
+
+        return TokenResponse(
+            access_token=criar_token_acesso(
+                usuario.id, usuario.perfil, dados_token.sessao_id
+            ),
+            token_type="bearer",
+            usuario=UsuarioResponse.model_validate(usuario),
+        )
+
+    def atualizar_perfil(
+        self, usuario: Usuario, dados: UsuarioUpdate
+    ) -> Usuario:
+        nome = dados.nome.strip()
+        cidade = dados.cidade.strip()
+        telefone = normalizar_apenas_digitos(dados.telefone)
+
+        if len(nome) < 3:
+            raise DadosInvalidosError("O nome deve ter pelo menos 3 caracteres.")
+
+        if len(cidade) < 2:
+            raise DadosInvalidosError(
+                "A cidade deve ter pelo menos 2 caracteres."
+            )
+
+        if len(telefone) not in (10, 11):
+            raise DadosInvalidosError("Telefone deve conter 10 ou 11 dígitos.")
+
+        usuario.nome = nome
+        usuario.telefone = telefone
+        usuario.cidade = cidade
+
+        return self._repositorio.salvar(usuario)
+
+    def alterar_senha(
+        self, usuario: Usuario, dados: AlterarSenhaRequest
+    ) -> None:
+        # Devolve 422 em vez de 401 para não encerrar a sessão ativa na tela
+        if not verificar_senha(dados.senha_atual, usuario.senha_hash):
+            raise DadosInvalidosError("Senha atual incorreta.")
+
+        if dados.senha_atual == dados.nova_senha:
+            raise DadosInvalidosError(
+                "A nova senha deve ser diferente da senha atual."
+            )
+
+        usuario.senha_hash = gerar_hash_senha(dados.nova_senha)
+        self._repositorio.salvar(usuario)
 
     def obter_usuario_do_token(self, token: str) -> Usuario:
         dados_token = decodificar_token(token)

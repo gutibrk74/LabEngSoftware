@@ -1,0 +1,125 @@
+.minhas-reservas-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.minhas-reservas-cabecalho h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 28px);
+  letter-spacing: -0.5px;
+}
+
+.minhas-reservas-cabecalho p {
+  margin: 6px 0 0;
+  color: #8a8a93;
+  font-size: 14px;
+}
+
+.reservas-abas {
+  display: inline-flex;
+  gap: 8px;
+  margin: 24px 0;
+  padding: 6px;
+  border: 1px solid #202024;
+  border-radius: 12px;
+  background: #111114;
+}
+
+.reservas-aba {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reservas-aba--ativa {
+  background: #d1131a;
+  color: #ffffff;
+}
+
+.reservas-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+
+.reserva-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #202024;
+  border-radius: 14px;
+  background: #111114;
+}
+
+.reserva-card-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reserva-card-topo h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.reserva-esporte {
+  color: #8a8a93;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.reserva-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reserva-badge--ativa {
+  background: rgb(34 197 94 / 15%);
+  color: #4ade80;
+}
+
+.reserva-badge--cancelada {
+  background: rgb(209 19 26 / 18%);
+  color: #ff666b;
+}
+
+.reserva-badge--concluida {
+  background: rgb(161 161 170 / 15%);
+  color: #a1a1aa;
+}
+
+.reserva-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  color: #d4d4d8;
+  font-size: 14px;
+}
+
+.reserva-detalhes span {
+  color: #8a8a93;
+}
+
+.reserva-vazio {
+  padding: 36px 24px;
+  border: 1px dashed #27272a;
+  border-radius: 14px;
+  color: #8a8a93;
+  text-align: center;
+}

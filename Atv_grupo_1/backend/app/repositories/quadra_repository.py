@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import ConflitoError
 from app.models.quadra import Quadra
+from app.repositories.integridade import constraint_violada
+
+# Índice em lower(nome), criado na migração 17455edafc3c.
+INDICE_NOME_UNICO = "uq_quadras_nome_lower"
 
 
 class QuadraRepository:
@@ -38,9 +42,19 @@ class QuadraRepository:
     def salvar(self, quadra: Quadra) -> Quadra:
         try:
             self._db.commit()
-        except IntegrityError:
+        except Exception as erro:
+            # Desfaz em qualquer falha, para a sessão continuar utilizável.
             self._db.rollback()
-            raise ConflitoError("Já existe uma quadra com este nome.") from None
+
+            # Só o índice de nome único vira 409; outros erros seguem adiante.
+            if (
+                isinstance(erro, IntegrityError)
+                and constraint_violada(erro) == INDICE_NOME_UNICO
+            ):
+                raise ConflitoError(
+                    "Já existe uma quadra com este nome."
+                ) from None
+            raise
 
         self._db.refresh(quadra)
         return quadra

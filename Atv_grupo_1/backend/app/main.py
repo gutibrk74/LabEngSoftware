@@ -4,8 +4,10 @@ from fastapi.responses import JSONResponse
 
 from app.api import (
     auth_router,
+    metricas_router,
     quadras_admin_router,
     quadras_router,
+    reservas_admin_router,
     reservas_router,
 )
 from app.core.exceptions import ErroDominio
@@ -13,7 +15,7 @@ from app.core.exceptions import ErroDominio
 app = FastAPI(
     title="Reserva de Quadras e Campos",
     description="API do sistema de reservas de quadras e campos esportivos.",
-    version="0.1.0",
+    version="1.0.0",
 )
 
 app.add_middleware(
@@ -50,6 +52,8 @@ app.include_router(auth_router)
 app.include_router(quadras_router)
 app.include_router(quadras_admin_router)
 app.include_router(reservas_router)
+app.include_router(reservas_admin_router)
+app.include_router(metricas_router)
 
 
 @app.get("/")
